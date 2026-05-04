@@ -11,6 +11,7 @@ import type { Column, Task } from '@/lib/types'
 interface TaskColumnProps {
   column: Column
   tasks: Task[]
+  isCardDragging: boolean
   onAddTask: (columnId: string, title: string) => Promise<void>
   onEditTask: (task: Task) => void
   onCarryOverTask: (taskId: string) => void
@@ -21,6 +22,7 @@ interface TaskColumnProps {
 export default function TaskColumn({
   column,
   tasks,
+  isCardDragging,
   onAddTask,
   onEditTask,
   onCarryOverTask,
@@ -127,6 +129,11 @@ export default function TaskColumn({
             />
           ))}
         </SortableContext>
+
+        {/* 드래그 중일 때 하단 드롭 영역 표시 */}
+        {isCardDragging && (
+          <div className="h-16 rounded-lg border-2 border-dashed border-gray-200 transition-all" />
+        )}
 
         {/* Add Task Form */}
         {adding ? (

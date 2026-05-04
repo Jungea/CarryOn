@@ -226,6 +226,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
                 key={column.id}
                 column={column}
                 tasks={tasks.filter((t) => t.columnId === column.id)}
+                isCardDragging={!!activeTask}
                 onAddTask={handleAddTask}
                 onEditTask={setEditingTask}
                 onCarryOverTask={handleCarryOver}
