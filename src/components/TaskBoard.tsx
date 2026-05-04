@@ -93,6 +93,20 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
     setColumns((prev) => [...prev, newCol])
   }
 
+  // 완료 컬럼 지정/해제 + 해당 컬럼 카드들 completedAt 일괄 갱신
+  async function handleToggleCompletedColumn(id: string, value: boolean) {
+    const updated = await store.updateColumn(id, { isCompletedColumn: value })
+    setColumns((prev) => prev.map((c) => (c.id === id ? updated : c)))
+
+    const colTasks = tasks.filter((t) => t.columnId === id)
+    if (colTasks.length === 0) return
+
+    const completedAt = value ? new Date().toISOString() : null
+    const patches = colTasks.map((t) => ({ id: t.id, completedAt }))
+    await store.batchUpdateTasks(patches)
+    setTasks((prev) => prev.map((t) => t.columnId === id ? { ...t, completedAt } : t))
+  }
+
   // 컬럼 이름 변경
   async function handleRenameColumn(id: string, name: string) {
     const updated = await store.updateColumn(id, { name })
@@ -232,6 +246,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
                 onCarryOverTask={handleCarryOver}
                 onRenameColumn={handleRenameColumn}
                 onDeleteColumn={handleDeleteColumn}
+                onToggleCompleted={handleToggleCompletedColumn}
               />
             ))}
 

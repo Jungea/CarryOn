@@ -17,6 +17,7 @@ interface TaskColumnProps {
   onCarryOverTask: (taskId: string) => void
   onRenameColumn: (id: string, name: string) => Promise<void>
   onDeleteColumn: (id: string) => Promise<void>
+  onToggleCompleted: (id: string, value: boolean) => Promise<void>
 }
 
 export default function TaskColumn({
@@ -28,6 +29,7 @@ export default function TaskColumn({
   onCarryOverTask,
   onRenameColumn,
   onDeleteColumn,
+  onToggleCompleted,
 }: TaskColumnProps) {
   const [editing, setEditing] = useState(false)
   const [nameInput, setNameInput] = useState(column.name)
@@ -100,6 +102,18 @@ export default function TaskColumn({
         )}
 
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => {
+              const msg = column.isCompletedColumn
+                ? `"${column.name}" 완료 컬럼 지정을 해제할까요? 카드들의 완료일이 초기화됩니다.`
+                : `"${column.name}"을 완료 컬럼으로 지정할까요? 카드들의 완료일이 오늘로 설정됩니다.`
+              if (confirm(msg)) onToggleCompleted(column.id, !column.isCompletedColumn)
+            }}
+            className={`text-xs px-1 transition-colors ${column.isCompletedColumn ? 'text-green-500 hover:text-gray-400' : 'text-gray-400 hover:text-green-500'}`}
+            title={column.isCompletedColumn ? '완료 컬럼 해제' : '완료 컬럼으로 지정'}
+          >
+            ✓
+          </button>
           <button
             onClick={() => { setEditing(true); setNameInput(column.name) }}
             className="text-gray-400 hover:text-gray-600 text-xs px-1"

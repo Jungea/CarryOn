@@ -45,7 +45,7 @@ export default function TaskCard({ task, onEdit, onCarryOver }: TaskCardProps) {
 
       <div className="mt-2 flex items-center justify-between">
         {task.completedAt ? (
-          <span className="text-xs text-green-500">
+          <span className="text-xs text-green-700/60">
             완료 {task.completedAt.slice(0, 10)}
           </span>
         ) : task.dueDate ? (
