@@ -16,6 +16,7 @@ export function getTasksForDate(tasks: Task[], dateStr: string): DayTasks {
   const created: Task[] = []
   const completed: Task[] = []
   const passing: Task[] = []
+  const today = new Date().toISOString().slice(0, 10)
 
   for (const task of tasks) {
     const createdDate = toDateString(task.createdAt)
@@ -27,6 +28,7 @@ export function getTasksForDate(tasks: Task[], dateStr: string): DayTasks {
       completed.push(task)
     } else if (
       createdDate < dateStr &&
+      dateStr <= today &&
       (completedDate === null || completedDate > dateStr)
     ) {
       passing.push(task)

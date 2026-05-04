@@ -45,9 +45,15 @@ describe('getTasksForDate', () => {
     expect(result.passing).toHaveLength(1)
   })
 
-  it('미완료 업무는 생성일 이후 모든 날에 passing', () => {
-    const result = getTasksForDate([baseTask], '2026-05-10')
+  it('미완료 업무는 생성일 이후 오늘까지 passing', () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const result = getTasksForDate([baseTask], today)
     expect(result.passing).toHaveLength(1)
+  })
+
+  it('미완료 업무는 오늘 이후 미래 날짜에는 passing 안 됨', () => {
+    const result = getTasksForDate([baseTask], '2099-12-31')
+    expect(result.passing).toHaveLength(0)
   })
 
   it('생성일 이전 날짜에는 포함되지 않음', () => {
