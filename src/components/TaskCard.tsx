@@ -44,10 +44,12 @@ export default function TaskCard({ task, onEdit, onCarryOver }: TaskCardProps) {
       <p className="text-sm font-medium text-gray-800 leading-snug">{task.title}</p>
 
       <div className="mt-2 flex items-center justify-between">
-        {task.dueDate ? (
-          <span
-            className={`text-xs ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-400'}`}
-          >
+        {task.completedAt ? (
+          <span className="text-xs text-green-500">
+            완료 {task.completedAt.slice(0, 10)}
+          </span>
+        ) : task.dueDate ? (
+          <span className={`text-xs ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
             {task.dueDate}
           </span>
         ) : (
