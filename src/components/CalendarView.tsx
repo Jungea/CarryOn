@@ -3,7 +3,7 @@
 'use client'
 
 import { useState } from 'react'
-import { getCalendarDays, getTaskCountForDate, toDateString } from '@/lib/calendarUtils'
+import { getCalendarDays, getTasksForDate, toDateString } from '@/lib/calendarUtils'
 import type { Task } from '@/lib/types'
 
 interface CalendarViewProps {
@@ -58,36 +58,65 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
           if (!date) return <div key={`null-${i}`} />
 
           const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-          const count = getTaskCountForDate(tasks, dateStr)
+          const { created, completed, passing } = getTasksForDate(tasks, dateStr)
           const isToday = dateStr === todayStr
           const isSelected = dateStr === selectedDate
           const isSunday = date.getDay() === 0
           const isSaturday = date.getDay() === 6
+
+          // 생성+완료 업무 제목 목록 (최대 3개, 초과 시 +N)
+          const titled = [
+            ...created.map((t) => ({ task: t, type: 'created' as const })),
+            ...completed.map((t) => ({ task: t, type: 'completed' as const })),
+          ]
+          const MAX = 3
+          const visibleTitled = titled.slice(0, MAX)
+          const overflow = titled.length - MAX
 
           return (
             <button
               key={dateStr}
               onClick={() => onDayClick(dateStr)}
               className={`
-                flex flex-col items-center justify-start p-1 rounded-lg min-h-14 transition-colors
+                flex flex-col items-start p-1 rounded-lg min-h-14 transition-colors w-full
                 ${isSelected ? 'bg-blue-500 text-white' : isToday ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-100'}
               `}
             >
               <span
                 className={`
-                  text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
+                  self-center text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
                   ${isSelected ? 'text-white' : isSunday ? 'text-red-500' : isSaturday ? 'text-blue-500' : 'text-gray-700'}
                 `}
               >
                 {date.getDate()}
               </span>
-              {count > 0 && (
-                <span
-                  className={`text-xs mt-0.5 font-semibold ${isSelected ? 'text-blue-100' : 'text-blue-500'}`}
-                >
-                  {count}
-                </span>
-              )}
+
+              <div className="w-full flex flex-col gap-0.5 mt-0.5">
+                {visibleTitled.map(({ task, type }) => (
+                  <span
+                    key={task.id}
+                    className={`w-full truncate text-[10px] px-1 rounded leading-tight
+                      ${isSelected
+                        ? 'text-white'
+                        : type === 'created'
+                        ? 'text-blue-600'
+                        : 'text-green-600'
+                      }`}
+                  >
+                    {task.title}
+                  </span>
+                ))}
+                {overflow > 0 && (
+                  <span className={`text-[10px] px-1 ${isSelected ? 'text-blue-200' : 'text-gray-400'}`}>
+                    +{overflow}
+                  </span>
+                )}
+                {passing.length > 0 && (
+                  <span className={`text-[10px] px-1 ${isSelected ? 'text-blue-200' : 'text-gray-400'}`}>
+                    경유 {passing.length}
+                  </span>
+                )}
+              </div>
             </button>
           )
         })}
