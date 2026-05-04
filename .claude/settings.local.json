@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat /mnt/d/practice/carryon/.superpowers/brainstorm/*/state/server-info)",
+      "Bash(export PATH=\"$PATH:/usr/local/bin:/usr/bin\")",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git --yes)",
+      "Bash(mv /mnt/d/practice/carryon/.superpowers /tmp/carryon-superpowers-backup)",
+      "Bash(npx create-next-app@latest /mnt/d/practice/carryon --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git --yes)"
+    ]
+  }
+}
