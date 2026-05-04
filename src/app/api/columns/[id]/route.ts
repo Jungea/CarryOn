@@ -1,3 +1,5 @@
+// PUT    /api/columns/[id] — 컬럼 수정 (이름, isCompletedColumn 등)
+// DELETE /api/columns/[id] — 컬럼 삭제
 import { NextResponse } from 'next/server'
 import { readColumns, writeColumns } from '@/lib/dataStore'
 

@@ -1,3 +1,5 @@
+// 업무 상세 편집 모달 (제목, 메모, 마감일 수정 / 삭제)
+// task prop이 null이면 렌더링하지 않음
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -54,6 +56,9 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Tas
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-semibold text-gray-800">업무 편집</h2>
+        <p className="text-xs text-gray-400">
+          생성일: {new Date(task.createdAt).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+        </p>
 
         <div className="flex flex-col gap-1">
           <label className="text-xs text-gray-500 font-medium">제목</label>

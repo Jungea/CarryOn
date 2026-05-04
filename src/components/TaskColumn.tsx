@@ -1,3 +1,5 @@
+// 칸반 보드의 컬럼 하나 (헤더, 업무 목록, 업무 추가 폼 포함)
+// 컬럼 자체도 드래그 가능 (useSortable)
 'use client'
 
 import { useState } from 'react'
@@ -9,7 +11,7 @@ import type { Column, Task } from '@/lib/types'
 interface TaskColumnProps {
   column: Column
   tasks: Task[]
-  onAddTask: (columnId: string) => Promise<void>
+  onAddTask: (columnId: string, title: string) => Promise<void>
   onEditTask: (task: Task) => void
   onCarryOverTask: (taskId: string) => void
   onRenameColumn: (id: string, name: string) => Promise<void>
@@ -56,7 +58,7 @@ export default function TaskColumn({
     e.preventDefault()
     const trimmed = newTitle.trim()
     if (!trimmed) return
-    await onAddTask(column.id)
+    await onAddTask(column.id, trimmed)
     setNewTitle('')
     setAdding(false)
   }

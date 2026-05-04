@@ -1,3 +1,4 @@
+// 앱 전체에서 공유하는 데이터 타입 정의
 export interface Task {
   id: string
   title: string

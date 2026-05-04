@@ -1,3 +1,5 @@
+// 모바일 전용 하단 탭 네비게이션 (업무 / 캘린더)
+// md 이상 화면에서는 숨김 (layout.tsx의 상단 nav 사용)
 'use client'
 
 import Link from 'next/link'

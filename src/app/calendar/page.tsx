@@ -1,3 +1,5 @@
+// 캘린더 페이지 (Client Component)
+// 마운트 시 API에서 tasks/columns를 fetch해서 CalendarView + DaySidePanel에 전달
 'use client'
 
 import { useEffect, useState } from 'react'

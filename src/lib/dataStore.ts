@@ -1,3 +1,5 @@
+// 서버 전용: data/tasks.json, data/columns.json 파일 읽기/쓰기
+// API Route Handler에서만 사용 (클라이언트에서 직접 import 금지)
 import { readFile, writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import type { Task, Column } from './types'

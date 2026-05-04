@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "CHOKIDAR_USEPOLLING=true next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -30,6 +30,7 @@
     "jest-environment-node": "^30.3.0",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.9",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

@@ -1,3 +1,4 @@
+// 앱 전체 레이아웃: 상단 데스크톱 네비, 하단 모바일 탭바 포함
 import type { Metadata } from 'next'
 import './globals.css'
 import BottomNav from '@/components/BottomNav'

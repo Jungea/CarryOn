@@ -1,3 +1,5 @@
+// 칸반 보드 전체를 관리하는 최상위 클라이언트 컴포넌트
+// tasks/columns 상태 보관, DnD 이벤트 처리, API 호출 담당
 'use client'
 
 import { useState } from 'react'
@@ -10,7 +12,6 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
-  type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
@@ -37,6 +38,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
   )
 
+  // 2초 후 자동으로 사라지는 토스트 메시지 표시
   function showToast(msg: string) {
     setToast(msg)
     setTimeout(() => setToast(null), 2000)
@@ -44,32 +46,36 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
 
   // ── Task handlers ──────────────────────────────────────
 
-  async function handleAddTask(columnId: string) {
+  // 컬럼에 새 업무 추가 (order는 현재 컬럼 마지막 순서)
+  async function handleAddTask(columnId: string, title: string) {
     const colTasks = tasks.filter((t) => t.columnId === columnId)
     const newTask = await store.createTask({
-      title: '새 업무',
+      title,
       columnId,
       order: colTasks.length,
     })
     setTasks((prev) => [...prev, newTask])
-    setEditingTask(newTask)
   }
 
+  // 업무 수정 (제목, 메모, 마감일 등 부분 업데이트)
   async function handleSaveTask(id: string, data: Partial<Task>) {
     const updated = await store.updateTask(id, data)
     setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)))
   }
 
+  // 업무 삭제
   async function handleDeleteTask(id: string) {
     await store.deleteTask(id)
     setTasks((prev) => prev.filter((t) => t.id !== id))
   }
 
+  // 개별 업무 이월 (현재는 토스트만 표시, 실제 날짜 이동 미구현)
   function handleCarryOver(taskId: string) {
     void taskId
     showToast('내일로 이월됩니다 ✓')
   }
 
+  // 미완료 업무 전체 이월 (현재는 토스트만 표시, 실제 날짜 이동 미구현)
   function handleCarryOverAll() {
     const incomplete = tasks.filter((t) => !t.completedAt)
     showToast(`미완료 업무 ${incomplete.length}개가 내일로 이월됩니다 ✓`)
@@ -77,6 +83,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
 
   // ── Column handlers ────────────────────────────────────
 
+  // 새 컬럼 추가 (기본 이름 '새 컬럼', 마지막 순서)
   async function handleAddColumn() {
     const newCol = await store.createColumn({
       name: '새 컬럼',
@@ -86,11 +93,13 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
     setColumns((prev) => [...prev, newCol])
   }
 
+  // 컬럼 이름 변경
   async function handleRenameColumn(id: string, name: string) {
     const updated = await store.updateColumn(id, { name })
     setColumns((prev) => prev.map((c) => (c.id === id ? updated : c)))
   }
 
+  // 컬럼 삭제 (포함된 업무도 함께 삭제)
   async function handleDeleteColumn(id: string) {
     const colTasks = tasks.filter((t) => t.columnId === id)
     await Promise.all(colTasks.map((t) => store.deleteTask(t.id)))
@@ -101,33 +110,16 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
 
   // ── DnD handlers ───────────────────────────────────────
 
+  // 드래그 시작: DragOverlay에 표시할 카드 기억
   function handleDragStart({ active }: DragStartEvent) {
     const task = tasks.find((t) => t.id === active.id)
     if (task) setActiveTask(task)
   }
 
-  function handleDragOver({ active, over }: DragOverEvent) {
-    if (!over || active.id === over.id) return
-
-    const draggedTask = tasks.find((t) => t.id === active.id)
-    const overTask = tasks.find((t) => t.id === over.id)
-    const overColumn = columns.find((c) => c.id === over.id)
-
-    if (!draggedTask) return
-
-    const targetColumnId = overTask?.columnId ?? overColumn?.id
-    if (!targetColumnId || draggedTask.columnId === targetColumnId) return
-
-    setTasks((prev) =>
-      prev.map((t) => (t.id === draggedTask.id ? { ...t, columnId: targetColumnId } : t))
-    )
-  }
-
+  // 드래그 종료: 컬럼/카드 순서 재계산 후 API에 저장
   async function handleDragEnd({ active, over }: DragEndEvent) {
     setActiveTask(null)
     if (!over || active.id === over.id) return
-
-    const draggedTask = tasks.find((t) => t.id === active.id)
 
     // 컬럼 재정렬
     const activeColIndex = columns.findIndex((c) => c.id === active.id)
@@ -139,12 +131,14 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
         order: i,
       }))
       setColumns(reordered)
-      await Promise.all(reordered.map((c) => store.updateColumn(c.id, { order: c.order })))
+      await store.batchUpdateColumns(reordered.map((c) => ({ id: c.id, order: c.order })))
       return
     }
 
     // 카드 재정렬
+    const draggedTask = tasks.find((t) => t.id === active.id)
     if (!draggedTask) return
+
     const overTask = tasks.find((t) => t.id === over.id)
     const targetColumnId = overTask?.columnId ?? columns.find((c) => c.id === over.id)?.id
     if (!targetColumnId) return
@@ -156,27 +150,49 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
       ? null
       : draggedTask.completedAt
 
-    setTasks((prev) => {
-      const colTasks = prev
+    const others = tasks.filter((t) => t.columnId !== targetColumnId)
+
+    if (draggedTask.columnId === targetColumnId) {
+      // 같은 컬럼 내 재정렬: arrayMove로 위/아래 모두 정확하게 처리
+      const colTasks = tasks
         .filter((t) => t.columnId === targetColumnId)
         .sort((a, b) => a.order - b.order)
-      const others = prev.filter((t) => t.columnId !== targetColumnId && t.id !== draggedTask.id)
+      const activeIndex = colTasks.findIndex((t) => t.id === active.id)
+      const overIndex = colTasks.findIndex((t) => t.id === over.id)
+      if (overIndex === -1) return
+      const reordered = arrayMove(colTasks, activeIndex, overIndex).map((t, i) => ({ ...t, order: i }))
+      setTasks([...others, ...reordered])
+      await store.batchUpdateTasks(
+        reordered.map((t) => ({ id: t.id, columnId: t.columnId, order: t.order, completedAt: t.completedAt }))
+      )
+    } else {
+      // 다른 컬럼으로 이동: 카드 위/아래 절반 기준으로 앞/뒤 결정
+      const colTasks = tasks
+        .filter((t) => t.columnId === targetColumnId)
+        .sort((a, b) => a.order - b.order)
 
-      const targetIndex = overTask ? colTasks.findIndex((t) => t.id === over.id) : colTasks.length
-      const withoutActive = colTasks.filter((t) => t.id !== draggedTask.id)
-      withoutActive.splice(targetIndex, 0, {
+      let insertIndex: number
+      if (!overTask) {
+        insertIndex = colTasks.length
+      } else {
+        const overCenter = over.rect.top + over.rect.height / 2
+        const activeTop = active.rect.current.translated?.top ?? over.rect.top
+        const insertAfter = activeTop > overCenter
+        const foundIndex = colTasks.findIndex((t) => t.id === over.id)
+        insertIndex = foundIndex === -1 ? colTasks.length : foundIndex + (insertAfter ? 1 : 0)
+      }
+
+      colTasks.splice(insertIndex, 0, {
         ...draggedTask,
         columnId: targetColumnId,
         completedAt: newCompletedAt,
       })
-      const reordered = withoutActive.map((t, i) => ({ ...t, order: i }))
-
-      reordered.forEach((t) =>
-        store.updateTask(t.id, { columnId: t.columnId, order: t.order, completedAt: t.completedAt })
+      const reordered = colTasks.map((t, i) => ({ ...t, order: i }))
+      setTasks([...others.filter((t) => t.id !== draggedTask.id), ...reordered])
+      await store.batchUpdateTasks(
+        reordered.map((t) => ({ id: t.id, columnId: t.columnId, order: t.order, completedAt: t.completedAt }))
       )
-
-      return [...others, ...reordered]
-    })
+    }
   }
 
   const sortedColumns = [...columns].sort((a, b) => a.order - b.order)
@@ -198,7 +214,6 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
         <SortableContext

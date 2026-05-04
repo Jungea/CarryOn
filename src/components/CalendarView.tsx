@@ -1,3 +1,5 @@
+// 월간 캘린더 그리드 (날짜별 업무 수 표시, 날짜 클릭 시 DaySidePanel 오픈)
+// 이전/다음 달 이동 가능
 'use client'
 
 import { useState } from 'react'

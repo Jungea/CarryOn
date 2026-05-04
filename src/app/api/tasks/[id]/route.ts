@@ -1,3 +1,5 @@
+// PUT    /api/tasks/[id] — 업무 수정 (제목, 메모, 마감일 등)
+// DELETE /api/tasks/[id] — 업무 삭제
 import { NextResponse } from 'next/server'
 import { readTasks, writeTasks } from '@/lib/dataStore'
 

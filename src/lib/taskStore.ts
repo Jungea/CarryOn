@@ -1,3 +1,5 @@
+// 클라이언트에서 API를 호출하는 함수 모음
+// TaskBoard 등 'use client' 컴포넌트에서 사용
 import type { Task, Column } from './types'
 
 // ── Tasks ─────────────────────────────────────────────
@@ -35,6 +37,15 @@ export async function deleteTask(id: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to delete task')
 }
 
+export async function batchUpdateTasks(updates: Partial<Task>[]): Promise<void> {
+  const res = await fetch('/api/tasks', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  })
+  if (!res.ok) throw new Error('Failed to batch update tasks')
+}
+
 // ── Columns ────────────────────────────────────────────
 
 export async function getColumns(): Promise<Column[]> {
@@ -68,4 +79,13 @@ export async function updateColumn(id: string, data: Partial<Column>): Promise<C
 export async function deleteColumn(id: string): Promise<void> {
   const res = await fetch(`/api/columns/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error('Failed to delete column')
+}
+
+export async function batchUpdateColumns(updates: Partial<Column>[]): Promise<void> {
+  const res = await fetch('/api/columns', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  })
+  if (!res.ok) throw new Error('Failed to batch update columns')
 }

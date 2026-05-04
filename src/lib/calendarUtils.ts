@@ -1,3 +1,5 @@
+// 캘린더 뷰에 필요한 날짜 계산 유틸리티
+// 날짜별 업무 분류(생성/완료/경유), 월별 날짜 배열 생성
 import type { Task } from './types'
 
 export function toDateString(isoString: string): string {

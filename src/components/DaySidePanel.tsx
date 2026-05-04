@@ -1,3 +1,5 @@
+// 캘린더에서 날짜 클릭 시 오른쪽에서 슬라이드되는 패널
+// 해당 날짜의 생성/완료/경유 업무를 섹션별로 표시
 'use client'
 
 import { getTasksForDate } from '@/lib/calendarUtils'

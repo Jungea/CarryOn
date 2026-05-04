@@ -1,5 +1,8 @@
+// 업무 카드 하나 (제목, 마감일, 이월 버튼 표시)
+// 드래그 가능 (useSortable), 클릭 시 TaskDetailModal 오픈
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Task } from '@/lib/types'
@@ -20,8 +23,9 @@ export default function TaskCard({ task, onEdit, onCarryOver }: TaskCardProps) {
     opacity: isDragging ? 0.4 : 1,
   }
 
-  const isOverdue =
-    task.dueDate && !task.completedAt && task.dueDate < new Date().toISOString().slice(0, 10)
+  const [today, setToday] = useState('')
+  useEffect(() => { setToday(new Date().toISOString().slice(0, 10)) }, [])
+  const isOverdue = task.dueDate && !task.completedAt && today && task.dueDate < today
 
   function handleCarryOver(e: React.MouseEvent) {
     e.stopPropagation()

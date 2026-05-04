@@ -1,5 +1,9 @@
+// 칸반 보드 페이지 (Server Component)
+// tasks.json, columns.json을 서버에서 읽어 TaskBoard에 초기값으로 전달
 import { readTasks, readColumns } from '@/lib/dataStore'
 import TaskBoard from '@/components/TaskBoard'
+
+export const dynamic = 'force-dynamic'
 
 export default async function BoardPage() {
   const [tasks, columns] = await Promise.all([readTasks(), readColumns()])
