@@ -31,18 +31,10 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   const [columns, setColumns] = useState<Column[]>([...initialColumns].sort((a, b) => a.order - b.order))
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
-  const [toast, setToast] = useState<string | null>(null)
-
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
   )
-
-  // 2초 후 자동으로 사라지는 토스트 메시지 표시
-  function showToast(msg: string) {
-    setToast(msg)
-    setTimeout(() => setToast(null), 2000)
-  }
 
   // ── Task handlers ──────────────────────────────────────
 
@@ -69,17 +61,6 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
     setTasks((prev) => prev.filter((t) => t.id !== id))
   }
 
-  // 개별 업무 이월 (현재는 토스트만 표시, 실제 날짜 이동 미구현)
-  function handleCarryOver(taskId: string) {
-    void taskId
-    showToast('내일로 이월됩니다 ✓')
-  }
-
-  // 미완료 업무 전체 이월 (현재는 토스트만 표시, 실제 날짜 이동 미구현)
-  function handleCarryOverAll() {
-    const incomplete = tasks.filter((t) => !t.completedAt)
-    showToast(`미완료 업무 ${incomplete.length}개가 내일로 이월됩니다 ✓`)
-  }
 
   // ── Column handlers ────────────────────────────────────
 
@@ -213,16 +194,6 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
 
   return (
     <div className="flex flex-col h-full">
-      {/* Carry Over All Button */}
-      <div className="flex justify-end px-4 py-2">
-        <button
-          onClick={handleCarryOverAll}
-          className="text-sm px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
-        >
-          미완료 전체 이월 →
-        </button>
-      </div>
-
       {/* Board */}
       <DndContext
         sensors={sensors}
@@ -240,10 +211,9 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
                 key={column.id}
                 column={column}
                 tasks={tasks.filter((t) => t.columnId === column.id)}
-                isCardDragging={!!activeTask}
+                isCardDragging={!!activeTask && activeTask.columnId !== column.id}
                 onAddTask={handleAddTask}
                 onEditTask={setEditingTask}
-                onCarryOverTask={handleCarryOver}
                 onRenameColumn={handleRenameColumn}
                 onDeleteColumn={handleDeleteColumn}
                 onToggleCompleted={handleToggleCompletedColumn}
@@ -263,7 +233,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
         <DragOverlay>
           {activeTask && (
             <div className="rotate-2 shadow-xl">
-              <TaskCard task={activeTask} onEdit={() => {}} onCarryOver={() => {}} />
+              <TaskCard task={activeTask} onEdit={() => {}} />
             </div>
           )}
         </DragOverlay>
@@ -277,12 +247,6 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
         onDelete={handleDeleteTask}
       />
 
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-sm px-4 py-2 rounded-full shadow-lg z-50">
-          {toast}
-        </div>
-      )}
     </div>
   )
 }

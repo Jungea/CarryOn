@@ -14,7 +14,6 @@ interface TaskColumnProps {
   isCardDragging: boolean
   onAddTask: (columnId: string, title: string) => Promise<void>
   onEditTask: (task: Task) => void
-  onCarryOverTask: (taskId: string) => void
   onRenameColumn: (id: string, name: string) => Promise<void>
   onDeleteColumn: (id: string) => Promise<void>
   onToggleCompleted: (id: string, value: boolean) => Promise<void>
@@ -26,7 +25,6 @@ export default function TaskColumn({
   isCardDragging,
   onAddTask,
   onEditTask,
-  onCarryOverTask,
   onRenameColumn,
   onDeleteColumn,
   onToggleCompleted,
@@ -139,7 +137,6 @@ export default function TaskColumn({
               key={task.id}
               task={task}
               onEdit={onEditTask}
-              onCarryOver={onCarryOverTask}
             />
           ))}
         </SortableContext>

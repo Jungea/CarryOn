@@ -10,10 +10,9 @@ import type { Task } from '@/lib/types'
 interface TaskCardProps {
   task: Task
   onEdit: (task: Task) => void
-  onCarryOver: (taskId: string) => void
 }
 
-export default function TaskCard({ task, onEdit, onCarryOver }: TaskCardProps) {
+export default function TaskCard({ task, onEdit }: TaskCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: task.id })
 
@@ -26,11 +25,14 @@ export default function TaskCard({ task, onEdit, onCarryOver }: TaskCardProps) {
   const [today, setToday] = useState('')
   useEffect(() => { setToday(new Date().toISOString().slice(0, 10)) }, [])
   const isOverdue = task.dueDate && !task.completedAt && today && task.dueDate < today
+  const dueDiff = task.dueDate && today
+    ? Math.floor((new Date(task.dueDate).getTime() - new Date(today).getTime()) / 86400000)
+    : null
 
-  function handleCarryOver(e: React.MouseEvent) {
-    e.stopPropagation()
-    onCarryOver(task.id)
-  }
+  const createdDate = task.createdAt.slice(0, 10)
+  const elapsedDays = today
+    ? Math.floor((new Date(today).getTime() - new Date(createdDate).getTime()) / 86400000)
+    : 0
 
   return (
     <div
@@ -41,30 +43,30 @@ export default function TaskCard({ task, onEdit, onCarryOver }: TaskCardProps) {
       onClick={() => onEdit(task)}
       className="bg-white rounded-lg border border-gray-200 p-3 cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all select-none"
     >
-      <p className="text-sm font-medium text-gray-800 leading-snug">{task.title}</p>
+      <p className="text-sm font-medium text-gray-800 leading-snug">
+        {task.title}
+        {task.memo && <span className="ml-1.5 text-xs text-gray-400 font-normal">≡</span>}
+      </p>
 
-      <div className="mt-2 flex items-center justify-between">
+      {!task.completedAt && (
+        <p className="mt-1 text-xs text-gray-400">
+          {createdDate} · +{elapsedDays}일
+        </p>
+      )}
+
+      <div className="mt-1 flex items-center justify-between">
         {task.completedAt ? (
           <span className="text-xs text-green-700/60">
             완료 {task.completedAt.slice(0, 10)}
           </span>
         ) : task.dueDate ? (
           <span className={`text-xs ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
-            {task.dueDate}
+            {task.dueDate} {dueDiff !== null && (dueDiff < 0 ? `${Math.abs(dueDiff)}일 초과` : `D-${dueDiff}`)}
           </span>
         ) : (
           <span />
         )}
 
-        {!task.completedAt && (
-          <button
-            onClick={handleCarryOver}
-            className="text-xs text-gray-400 hover:text-blue-500 transition-colors px-1"
-            title="내일로 가져가기"
-          >
-            → 내일
-          </button>
-        )}
       </div>
     </div>
   )
