@@ -2,7 +2,7 @@
 // tasks/columns 상태 보관, DnD 이벤트 처리, API 호출 담당
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -31,6 +31,31 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   const [columns, setColumns] = useState<Column[]>([...initialColumns].sort((a, b) => a.order - b.order))
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const updateScrollState = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 4)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    updateScrollState()
+    el.addEventListener('scroll', updateScrollState)
+    const ro = new ResizeObserver(updateScrollState)
+    ro.observe(el)
+    return () => { el.removeEventListener('scroll', updateScrollState); ro.disconnect() }
+  }, [updateScrollState])
+
+  function scrollBoard(dir: 'left' | 'right') {
+    scrollRef.current?.scrollBy({ left: dir === 'left' ? -304 : 304, behavior: 'smooth' })
+  }
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
@@ -193,7 +218,24 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   const sortedColumns = [...columns].sort((a, b) => a.order - b.order)
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      {canScrollLeft && (
+        <button
+          onClick={() => scrollBoard('left')}
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-md text-gray-500 hover:text-gray-800 hover:shadow-lg transition-all"
+        >
+          ‹
+        </button>
+      )}
+      {canScrollRight && (
+        <button
+          onClick={() => scrollBoard('right')}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-md text-gray-500 hover:text-gray-800 hover:shadow-lg transition-all"
+        >
+          ›
+        </button>
+      )}
+
       {/* Board */}
       <DndContext
         sensors={sensors}
@@ -205,7 +247,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
           items={sortedColumns.map((c) => c.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div className="flex gap-4 px-4 pb-4 overflow-x-auto flex-1 items-start">
+          <div ref={scrollRef} className="board-scroll flex gap-4 px-4 pt-2 pb-4 overflow-x-auto flex-1 items-start">
             {sortedColumns.map((column) => (
               <TaskColumn
                 key={column.id}
