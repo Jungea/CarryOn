@@ -66,7 +66,7 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
           const isSaturday = date.getDay() === 6
           const holiday = getHolidayName(dateStr)
 
-          const MAX = 1 // 카테고리별 표시 개수
+          const MAX = 2 // 카테고리별 표시 개수
 
           return (
             <button
@@ -103,10 +103,12 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
               <div className="w-full flex flex-col gap-0.5 mt-0.5">
                 {created.length > 0 && (
                   <>
-                    <span className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
-                      ${isSelected ? 'bg-white/20 text-white' : 'bg-violet-100 text-violet-700'}`}>
-                      {created[0].title}
-                    </span>
+                    {created.slice(0, MAX).map((t) => (
+                      <span key={t.id} className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
+                        ${isSelected ? 'bg-white/20 text-white' : 'bg-violet-100 text-violet-700'}`}>
+                        {t.title}
+                      </span>
+                    ))}
                     {created.length > MAX && (
                       <span className={`text-[10px] px-1 ${isSelected ? 'text-violet-200' : 'text-violet-400'}`}>
                         그외 {created.length - MAX}개
@@ -116,10 +118,12 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
                 )}
                 {completed.length > 0 && (
                   <>
-                    <span className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
-                      ${isSelected ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'}`}>
-                      {completed[0].title}
-                    </span>
+                    {completed.slice(0, MAX).map((t) => (
+                      <span key={t.id} className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
+                        ${isSelected ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'}`}>
+                        {t.title}
+                      </span>
+                    ))}
                     {completed.length > MAX && (
                       <span className={`text-[10px] px-1 ${isSelected ? 'text-green-200' : 'text-green-500'}`}>
                         그외 {completed.length - MAX}개
