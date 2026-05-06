@@ -33,14 +33,14 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-3 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600">←</button>
-        <h2 className="text-lg font-semibold text-gray-800">
+      <div className="flex items-center justify-between px-1">
+        <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-500 text-lg transition-colors">‹</button>
+        <h2 className="text-xl font-bold text-gray-800 tracking-tight">
           {year}년 {month + 1}월
         </h2>
-        <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600">→</button>
+        <button onClick={nextMonth} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-500 text-lg transition-colors">›</button>
       </div>
 
       {/* Weekday headers */}
@@ -78,13 +78,20 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
               key={dateStr}
               onClick={() => onDayClick(dateStr)}
               className={`
-                flex flex-col items-start p-1 rounded-lg min-h-14 transition-colors w-full
-                ${isSelected ? 'bg-blue-500 text-white' : isToday ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-100'}
+                flex flex-col items-start p-1.5 rounded-lg min-h-20 sm:min-h-32 transition-colors w-full
+                ${isSelected
+                  ? 'bg-blue-500 text-white'
+                  : isToday
+                  ? 'bg-blue-50 border border-blue-200'
+                  : isSunday || isSaturday
+                  ? 'bg-gray-50 hover:bg-gray-100'
+                  : 'hover:bg-gray-100'}
               `}
             >
               <span
                 className={`
-                  self-center text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
+                  text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
+                  ${isToday && !isSelected ? 'bg-blue-500 text-white' : ''}
                   ${isSelected ? 'text-white' : isSunday ? 'text-red-500' : isSaturday ? 'text-blue-500' : 'text-gray-700'}
                 `}
               >
@@ -92,15 +99,16 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
               </span>
 
               <div className="w-full flex flex-col gap-0.5 mt-0.5">
-                {visibleTitled.map(({ task, type }) => (
+                {visibleTitled.map(({ task, type }, idx) => (
                   <span
                     key={task.id}
-                    className={`w-full truncate text-[10px] px-1 rounded leading-tight
+                    className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
+                      ${idx > 0 ? 'hidden sm:block' : ''}
                       ${isSelected
-                        ? 'text-white'
+                        ? 'bg-white/20 text-white'
                         : type === 'created'
-                        ? 'text-blue-600'
-                        : 'text-green-600'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-green-100 text-green-700'
                       }`}
                   >
                     {task.title}
