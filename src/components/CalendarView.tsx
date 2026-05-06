@@ -4,6 +4,7 @@
 
 import { useState } from 'react'
 import { getCalendarDays, getTasksForDate, toDateString } from '@/lib/calendarUtils'
+import { getHolidayName } from '@/lib/holidays'
 import type { Task } from '@/lib/types'
 
 interface CalendarViewProps {
@@ -63,15 +64,9 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
           const isSelected = dateStr === selectedDate
           const isSunday = date.getDay() === 0
           const isSaturday = date.getDay() === 6
+          const holiday = getHolidayName(dateStr)
 
-          // 생성+완료 업무 제목 목록 (최대 3개, 초과 시 +N)
-          const titled = [
-            ...created.map((t) => ({ task: t, type: 'created' as const })),
-            ...completed.map((t) => ({ task: t, type: 'completed' as const })),
-          ]
-          const MAX = 3
-          const visibleTitled = titled.slice(0, MAX)
-          const overflow = titled.length - MAX
+          const MAX = 1 // 카테고리별 표시 개수
 
           return (
             <button
@@ -92,36 +87,49 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
                 className={`
                   text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
                   ${isToday && !isSelected ? 'bg-blue-500 text-white' : ''}
-                  ${isSelected ? 'text-white' : isSunday ? 'text-red-500' : isSaturday ? 'text-blue-500' : 'text-gray-700'}
+                  ${isSelected ? 'text-white' : isSunday || holiday ? 'text-red-500' : isSaturday ? 'text-blue-500' : 'text-gray-700'}
                 `}
               >
                 {date.getDate()}
               </span>
 
+              {holiday && (
+                <span className={`w-full truncate text-[10px] px-0.5 leading-tight font-medium
+                  ${isSelected ? 'text-red-200' : 'text-red-500'}`}>
+                  {holiday}
+                </span>
+              )}
+
               <div className="w-full flex flex-col gap-0.5 mt-0.5">
-                {visibleTitled.map(({ task, type }, idx) => (
-                  <span
-                    key={task.id}
-                    className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
-                      ${idx > 0 ? 'hidden sm:block' : ''}
-                      ${isSelected
-                        ? 'bg-white/20 text-white'
-                        : type === 'created'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-green-100 text-green-700'
-                      }`}
-                  >
-                    {task.title}
-                  </span>
-                ))}
-                {overflow > 0 && (
-                  <span className={`text-[10px] px-1 ${isSelected ? 'text-blue-200' : 'text-gray-400'}`}>
-                    +{overflow}
-                  </span>
+                {created.length > 0 && (
+                  <>
+                    <span className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
+                      ${isSelected ? 'bg-white/20 text-white' : 'bg-violet-100 text-violet-700'}`}>
+                      {created[0].title}
+                    </span>
+                    {created.length > MAX && (
+                      <span className={`text-[10px] px-1 ${isSelected ? 'text-violet-200' : 'text-violet-400'}`}>
+                        그외 {created.length - MAX}개
+                      </span>
+                    )}
+                  </>
+                )}
+                {completed.length > 0 && (
+                  <>
+                    <span className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
+                      ${isSelected ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'}`}>
+                      {completed[0].title}
+                    </span>
+                    {completed.length > MAX && (
+                      <span className={`text-[10px] px-1 ${isSelected ? 'text-green-200' : 'text-green-500'}`}>
+                        그외 {completed.length - MAX}개
+                      </span>
+                    )}
+                  </>
                 )}
                 {passing.length > 0 && (
                   <span className={`text-[10px] px-1 ${isSelected ? 'text-blue-200' : 'text-gray-400'}`}>
-                    경유 {passing.length}
+                    경유 {passing.length}개
                   </span>
                 )}
               </div>
