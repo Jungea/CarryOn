@@ -73,7 +73,8 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
           const holiday = getHolidayName(dateStr)
           const dayEvents = events.filter((e) => e.date === dateStr)
           const customHoliday = dayEvents.find((e) => e.type === 'holiday')
-          const leaveEvents = dayEvents.filter((e) => e.type !== 'holiday')
+          const leaveEvents = dayEvents.filter((e) => e.type !== 'holiday' && e.type !== 'event')
+          const scheduleEvents = dayEvents.filter((e) => e.type === 'event')
           const effectiveHoliday = holiday ?? customHoliday?.name ?? null
           const isHolidayDay = !!effectiveHoliday
 
@@ -111,6 +112,23 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
                     {effectiveHoliday}
                   </span>
                   <span className={`sm:hidden w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-red-300' : 'bg-red-500'}`} />
+                </>
+              )}
+
+              {scheduleEvents.length > 0 && (
+                <>
+                  {scheduleEvents.slice(0, 2).map((e) => (
+                    <span key={e.id} className={`hidden sm:block w-full truncate text-[10px] px-0.5 leading-tight font-medium
+                      ${isSelected ? 'text-white/80' : 'text-gray-600'}`}>
+                      {e.name}
+                    </span>
+                  ))}
+                  {scheduleEvents.length > 2 && (
+                    <span className={`hidden sm:block text-[10px] px-0.5 ${isSelected ? 'text-white/60' : 'text-gray-400'}`}>
+                      +{scheduleEvents.length - 2}
+                    </span>
+                  )}
+                  <span className={`sm:hidden w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white/60' : 'bg-gray-400'}`} />
                 </>
               )}
 

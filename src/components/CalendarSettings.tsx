@@ -15,7 +15,7 @@ interface CalendarSettingsProps {
 }
 
 export default function CalendarSettings({ open, events, onClose, onAddEvent, onDeleteEvent }: CalendarSettingsProps) {
-  const [tab, setTab] = useState<'holiday' | 'leave'>('holiday')
+  const [tab, setTab] = useState<'event' | 'holiday' | 'leave'>('event')
   const [date, setDate] = useState('')
   const [name, setName] = useState('')
   const [leaveType, setLeaveType] = useState<EventType>('연차')
@@ -23,17 +23,18 @@ export default function CalendarSettings({ open, events, onClose, onAddEvent, on
 
   if (!open) return null
 
+  const schedules = events.filter((e) => e.type === 'event').sort((a, b) => a.date.localeCompare(b.date))
   const holidays = events.filter((e) => e.type === 'holiday').sort((a, b) => a.date.localeCompare(b.date))
-  const leaves = events.filter((e) => e.type !== 'holiday').sort((a, b) => a.date.localeCompare(b.date))
+  const leaves = events.filter((e) => e.type !== 'holiday' && e.type !== 'event').sort((a, b) => a.date.localeCompare(b.date))
 
   async function handleAdd() {
     if (!date) return
-    if (tab === 'holiday' && !name.trim()) return
+    if ((tab === 'holiday' || tab === 'event') && !name.trim()) return
     setSaving(true)
     await onAddEvent({
       date,
-      type: tab === 'holiday' ? 'holiday' : leaveType,
-      name: tab === 'holiday' ? name.trim() : undefined,
+      type: tab === 'holiday' ? 'holiday' : tab === 'event' ? 'event' : leaveType,
+      name: (tab === 'holiday' || tab === 'event') ? name.trim() : undefined,
     })
     setDate('')
     setName('')
@@ -52,6 +53,12 @@ export default function CalendarSettings({ open, events, onClose, onAddEvent, on
         {/* Tabs */}
         <div className="flex border-b border-gray-200">
           <button
+            onClick={() => setTab('event')}
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors ${tab === 'event' ? 'text-gray-700 border-b-2 border-gray-500' : 'text-gray-400 hover:text-gray-600'}`}
+          >
+            일정
+          </button>
+          <button
             onClick={() => setTab('holiday')}
             className={`flex-1 py-2.5 text-sm font-medium transition-colors ${tab === 'holiday' ? 'text-red-500 border-b-2 border-red-400' : 'text-gray-400 hover:text-gray-600'}`}
           >
@@ -59,7 +66,7 @@ export default function CalendarSettings({ open, events, onClose, onAddEvent, on
           </button>
           <button
             onClick={() => setTab('leave')}
-            className={`flex-1 py-2.5 text-sm font-medium transition-colors ${tab === 'leave' ? 'text-orange-500 border-b-2 border-orange-400' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors ${tab === 'leave' ? 'text-amber-500 border-b-2 border-amber-400' : 'text-gray-400 hover:text-gray-600'}`}
           >
             연차
           </button>
@@ -67,16 +74,16 @@ export default function CalendarSettings({ open, events, onClose, onAddEvent, on
 
         {/* List */}
         <div className="flex-1 overflow-y-auto px-5 py-3 flex flex-col gap-1">
-          {(tab === 'holiday' ? holidays : leaves).map((e) => (
+          {(tab === 'event' ? schedules : tab === 'holiday' ? holidays : leaves).map((e) => (
             <div key={e.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
               <div>
                 <span className="text-sm text-gray-800">{e.date}</span>
-                <span className="ml-2 text-sm text-gray-500">{tab === 'holiday' ? e.name : e.type}</span>
+                <span className="ml-2 text-sm text-gray-500">{tab === 'leave' ? e.type : e.name}</span>
               </div>
               <button onClick={() => onDeleteEvent(e.id)} className="text-gray-300 hover:text-red-400 text-xs px-1 transition-colors">✕</button>
             </div>
           ))}
-          {(tab === 'holiday' ? holidays : leaves).length === 0 && (
+          {(tab === 'event' ? schedules : tab === 'holiday' ? holidays : leaves).length === 0 && (
             <p className="text-sm text-gray-400 text-center py-6">등록된 항목이 없습니다</p>
           )}
         </div>
@@ -90,10 +97,10 @@ export default function CalendarSettings({ open, events, onClose, onAddEvent, on
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
-            {tab === 'holiday' ? (
+            {tab === 'holiday' || tab === 'event' ? (
               <input
                 className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="공휴일 이름"
+                placeholder={tab === 'event' ? '일정 이름' : '공휴일 이름'}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />

@@ -37,18 +37,18 @@ function QuickAddEvent({
   dateStr: string
   onAdd: (data: { date: string; type: EventType; name?: string }) => Promise<void>
 }) {
-  const [mode, setMode] = useState<'holiday' | 'leave' | null>(null)
+  const [mode, setMode] = useState<'holiday' | 'leave' | 'event' | null>(null)
   const [name, setName] = useState('')
   const [leaveType, setLeaveType] = useState<EventType>('연차')
   const [saving, setSaving] = useState(false)
 
   async function handleAdd() {
-    if (mode === 'holiday' && !name.trim()) return
+    if ((mode === 'holiday' || mode === 'event') && !name.trim()) return
     setSaving(true)
     await onAdd({
       date: dateStr,
-      type: mode === 'holiday' ? 'holiday' : leaveType,
-      name: mode === 'holiday' ? name.trim() : undefined,
+      type: mode === 'holiday' ? 'holiday' : mode === 'event' ? 'event' : leaveType,
+      name: (mode === 'holiday' || mode === 'event') ? name.trim() : undefined,
     })
     setName('')
     setMode(null)
@@ -57,11 +57,14 @@ function QuickAddEvent({
 
   if (!mode) {
     return (
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
+        <button onClick={() => setMode('event')} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 hover:border-gray-300 hover:text-gray-700 transition-colors">
+          + 일정
+        </button>
         <button onClick={() => setMode('holiday')} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors">
           + 공휴일
         </button>
-        <button onClick={() => setMode('leave')} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-600 transition-colors">
+        <button onClick={() => setMode('leave')} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600 transition-colors">
           + 연차
         </button>
       </div>
@@ -70,10 +73,10 @@ function QuickAddEvent({
 
   return (
     <div className="flex flex-col gap-2">
-      {mode === 'holiday' ? (
+      {mode === 'holiday' || mode === 'event' ? (
         <input
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
-          placeholder="공휴일 이름"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          placeholder={mode === 'event' ? '일정 이름' : '공휴일 이름'}
           value={name}
           onChange={(e) => setName(e.target.value)}
           autoFocus
@@ -112,7 +115,8 @@ export default function DaySidePanel({ dateStr, tasks, columns, events, onClose,
 
   const dayEvents = events.filter((e) => e.date === dateStr)
   const customHolidays = dayEvents.filter((e) => e.type === 'holiday')
-  const leaveEvents = dayEvents.filter((e) => e.type !== 'holiday')
+  const leaveEvents = dayEvents.filter((e) => e.type !== 'holiday' && e.type !== 'event')
+  const scheduleEvents = dayEvents.filter((e) => e.type === 'event')
 
   return (
     <div className="fixed inset-0 z-40 flex justify-end" onClick={onClose}>
@@ -150,6 +154,19 @@ export default function DaySidePanel({ dateStr, tasks, columns, events, onClose,
                     <p className="text-sm text-gray-800">{e.name}</p>
                     <p className="text-xs text-gray-400 mt-0.5">커스텀 공휴일</p>
                   </div>
+                  <button onClick={() => onDeleteEvent(e.id)} className="text-gray-300 hover:text-red-400 text-xs px-1">✕</button>
+                </div>
+              ))}
+            </section>
+          )}
+
+          {/* 일정 섹션 */}
+          {scheduleEvents.length > 0 && (
+            <section>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">일정</h3>
+              {scheduleEvents.map((e) => (
+                <div key={e.id} className="py-2 border-b border-gray-100 last:border-0 flex items-center justify-between">
+                  <p className="text-sm text-gray-800">{e.name}</p>
                   <button onClick={() => onDeleteEvent(e.id)} className="text-gray-300 hover:text-red-400 text-xs px-1">✕</button>
                 </div>
               ))}

@@ -18,7 +18,7 @@ export interface Column {
 }
 
 export type LeaveType = '연차' | '오전반차' | '오후반차' | '오전반반차' | '오후반반차'
-export type EventType = 'holiday' | LeaveType
+export type EventType = 'holiday' | 'event' | LeaveType
 
 export interface CalendarEvent {
   id: string
