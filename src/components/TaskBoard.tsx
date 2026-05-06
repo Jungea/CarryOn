@@ -219,6 +219,23 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
     }
   }
 
+  async function handleMoveToNextColumn(taskId: string) {
+    const task = tasks.find((t) => t.id === taskId)
+    if (!task) return
+    const sorted = [...columns].sort((a, b) => a.order - b.order)
+    const colIndex = sorted.findIndex((c) => c.id === task.columnId)
+    if (colIndex === -1 || colIndex >= sorted.length - 1) return
+    const nextCol = sorted[colIndex + 1]
+    const nextColTasks = tasks.filter((t) => t.columnId === nextCol.id)
+    const completedAt = nextCol.isCompletedColumn && !task.completedAt
+      ? new Date().toISOString()
+      : !nextCol.isCompletedColumn && task.completedAt
+      ? null
+      : task.completedAt
+    await store.batchUpdateTasks([{ id: task.id, columnId: nextCol.id, order: nextColTasks.length, completedAt }])
+    setTasks((prev) => prev.map((t) => t.id === taskId ? { ...t, columnId: nextCol.id, order: nextColTasks.length, completedAt } : t))
+  }
+
   const sortedColumns = [...columns].sort((a, b) => a.order - b.order)
   const todayDueTasks = today ? tasks.filter((t) => t.dueDate === today && !t.completedAt) : []
 
@@ -284,15 +301,17 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
         </div>
       )}
 
-      {/* Today Due Floating Button */}
+      {/* Today Due Button */}
       {todayDueTasks.length > 0 && (
-        <button
-          onClick={() => setShowTodayPanel(true)}
-          className="absolute top-0 right-14 z-10 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-orange-500 text-white shadow-sm hover:bg-orange-600 transition-colors"
-        >
-          오늘 마감
-          <span className="font-bold">{todayDueTasks.length}</span>
-        </button>
+        <div className="px-4 pb-2 flex justify-end">
+          <button
+            onClick={() => setShowTodayPanel(true)}
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-orange-500 text-white shadow-sm hover:bg-orange-600 transition-colors"
+          >
+            오늘 마감
+            <span className="font-bold">{todayDueTasks.length}</span>
+          </button>
+        </div>
       )}
 
       {/* Board */}
@@ -307,7 +326,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
           strategy={horizontalListSortingStrategy}
         >
           <div ref={scrollRef} className="board-scroll flex gap-4 px-4 pt-2 pb-4 overflow-x-auto flex-1 items-start">
-            {sortedColumns.map((column) => (
+            {sortedColumns.map((column, colIdx) => (
               <TaskColumn
                 key={column.id}
                 column={column}
@@ -318,6 +337,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
                 onRenameColumn={handleRenameColumn}
                 onDeleteColumn={handleDeleteColumn}
                 onToggleCompleted={handleToggleCompletedColumn}
+                onMoveNext={colIdx < sortedColumns.length - 1 ? handleMoveToNextColumn : undefined}
               />
             ))}
 
@@ -343,6 +363,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
       {/* Detail Modal */}
       <TaskDetailModal
         task={editingTask}
+        columns={columns}
         onClose={() => setEditingTask(null)}
         onSave={handleSaveTask}
         onDelete={handleDeleteTask}

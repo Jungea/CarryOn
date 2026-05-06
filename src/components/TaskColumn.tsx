@@ -17,6 +17,7 @@ interface TaskColumnProps {
   onRenameColumn: (id: string, name: string) => Promise<void>
   onDeleteColumn: (id: string) => Promise<void>
   onToggleCompleted: (id: string, value: boolean) => Promise<void>
+  onMoveNext?: (taskId: string) => Promise<void>
 }
 
 export default function TaskColumn({
@@ -28,6 +29,7 @@ export default function TaskColumn({
   onRenameColumn,
   onDeleteColumn,
   onToggleCompleted,
+  onMoveNext,
 }: TaskColumnProps) {
   const [editing, setEditing] = useState(false)
   const [nameInput, setNameInput] = useState(column.name)
@@ -71,7 +73,7 @@ export default function TaskColumn({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex-shrink-0 w-72 bg-gray-50 rounded-xl flex flex-col max-h-full snap-start"
+      className="flex-shrink-0 w-[calc(100vw-4rem)] sm:w-72 bg-gray-50 rounded-xl flex flex-col max-h-full snap-start"
     >
       {/* Column Header */}
       <div
@@ -137,6 +139,7 @@ export default function TaskColumn({
               key={task.id}
               task={task}
               onEdit={onEditTask}
+              onMoveNext={onMoveNext ? () => onMoveNext(task.id) : undefined}
             />
           ))}
         </SortableContext>

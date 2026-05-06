@@ -3,19 +3,21 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { Task } from '@/lib/types'
+import type { Task, Column } from '@/lib/types'
 
 interface TaskDetailModalProps {
   task: Task | null
+  columns: Column[]
   onClose: () => void
   onSave: (id: string, data: Partial<Task>) => Promise<void>
   onDelete: (id: string) => Promise<void>
 }
 
-export default function TaskDetailModal({ task, onClose, onSave, onDelete }: TaskDetailModalProps) {
+export default function TaskDetailModal({ task, columns, onClose, onSave, onDelete }: TaskDetailModalProps) {
   const [title, setTitle] = useState('')
   const [memo, setMemo] = useState('')
   const [dueDate, setDueDate] = useState('')
+  const [columnId, setColumnId] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -23,6 +25,7 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Tas
       setTitle(task.title)
       setMemo(task.memo)
       setDueDate(task.dueDate ?? '')
+      setColumnId(task.columnId)
     }
   }, [task])
 
@@ -31,10 +34,18 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Tas
   async function handleSave() {
     if (!task) return
     setSaving(true)
+    const targetCol = columns.find((c) => c.id === columnId)
+    const completedAt = targetCol?.isCompletedColumn && !task.completedAt
+      ? new Date().toISOString()
+      : !targetCol?.isCompletedColumn && task.completedAt
+      ? null
+      : task.completedAt
     await onSave(task.id, {
       title: title.trim() || '(제목 없음)',
       memo,
       dueDate: dueDate || null,
+      columnId,
+      completedAt,
     })
     setSaving(false)
     onClose()
@@ -80,6 +91,19 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Tas
             placeholder="메모 (선택)"
             rows={3}
           />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-gray-500 font-medium">컬럼</label>
+          <select
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={columnId}
+            onChange={(e) => setColumnId(e.target.value)}
+          >
+            {[...columns].sort((a, b) => a.order - b.order).map((col) => (
+              <option key={col.id} value={col.id}>{col.name}</option>
+            ))}
+          </select>
         </div>
 
         <div className="flex flex-col gap-1">

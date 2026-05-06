@@ -10,9 +10,10 @@ import type { Task } from '@/lib/types'
 interface TaskCardProps {
   task: Task
   onEdit: (task: Task) => void
+  onMoveNext?: () => void
 }
 
-export default function TaskCard({ task, onEdit }: TaskCardProps) {
+export default function TaskCard({ task, onEdit, onMoveNext }: TaskCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: task.id })
 
@@ -41,7 +42,7 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
       {...attributes}
       {...listeners}
       onClick={() => onEdit(task)}
-      className="bg-white rounded-lg border border-gray-200 p-3 cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all select-none"
+      className="bg-white rounded-lg border border-gray-200 p-3 cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all select-none relative"
     >
       <p className="text-sm font-medium text-gray-800 leading-snug">
         {task.title}
@@ -67,6 +68,14 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
           <span />
         )}
 
+        {onMoveNext && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onMoveNext() }}
+            className="sm:hidden ml-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-blue-100 hover:text-blue-500 transition-colors text-sm leading-none flex-shrink-0"
+          >
+            ›
+          </button>
+        )}
       </div>
     </div>
   )
