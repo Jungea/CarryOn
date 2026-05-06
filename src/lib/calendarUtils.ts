@@ -22,11 +22,9 @@ export function getTasksForDate(tasks: Task[], dateStr: string): DayTasks {
     const createdDate = toDateString(task.createdAt)
     const completedDate = task.completedAt ? toDateString(task.completedAt) : null
 
-    if (createdDate === dateStr) {
-      created.push(task)
-    } else if (completedDate === dateStr) {
-      completed.push(task)
-    } else if (
+    if (createdDate === dateStr) created.push(task)
+    if (completedDate === dateStr) completed.push(task)
+    if (
       createdDate < dateStr &&
       dateStr <= today &&
       (completedDate === null || completedDate > dateStr)
