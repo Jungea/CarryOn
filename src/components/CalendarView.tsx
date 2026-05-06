@@ -94,10 +94,13 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
               </span>
 
               {holiday && (
-                <span className={`w-full truncate text-[10px] px-0.5 leading-tight font-medium
-                  ${isSelected ? 'text-red-200' : 'text-red-500'}`}>
-                  {holiday}
-                </span>
+                <>
+                  <span className={`hidden sm:block w-full truncate text-[10px] px-0.5 leading-tight font-medium
+                    ${isSelected ? 'text-red-200' : 'text-red-500'}`}>
+                    {holiday}
+                  </span>
+                  <span className={`sm:hidden w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-red-300' : 'bg-red-500'}`} />
+                </>
               )}
 
               <div className="w-full flex flex-col gap-0.5 mt-0.5">

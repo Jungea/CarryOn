@@ -3,7 +3,10 @@
 'use client'
 
 import { getTasksForDate } from '@/lib/calendarUtils'
+import { getHolidayName } from '@/lib/holidays'
 import type { Column, Task } from '@/lib/types'
+
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
 interface DaySidePanelProps {
   dateStr: string | null
@@ -27,6 +30,10 @@ export default function DaySidePanel({ dateStr, tasks, columns, onClose }: DaySi
 
   const { created, completed, passing } = getTasksForDate(tasks, dateStr)
   const total = created.length + completed.length + passing.length
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  const weekday = WEEKDAYS[date.getDay()]
+  const holiday = getHolidayName(dateStr)
 
   return (
     <div className="fixed inset-0 z-40 flex justify-end" onClick={onClose}>
@@ -36,8 +43,13 @@ export default function DaySidePanel({ dateStr, tasks, columns, onClose }: DaySi
       >
         <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-base font-semibold text-gray-800">{dateStr}</h2>
-            <p className="text-xs text-gray-400">업무 {total}개</p>
+            <h2 className="text-base font-semibold text-gray-800">
+              {dateStr} ({weekday})
+            </h2>
+            <div className="flex items-center gap-2 mt-0.5">
+              {holiday && <span className="text-xs text-red-500 font-medium">{holiday}</span>}
+              <p className="text-xs text-gray-400">업무 {total}개</p>
+            </div>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
         </div>
