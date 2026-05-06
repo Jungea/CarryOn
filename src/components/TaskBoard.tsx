@@ -31,9 +31,13 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   const [columns, setColumns] = useState<Column[]>([...initialColumns].sort((a, b) => a.order - b.order))
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
+  const [showTodayPanel, setShowTodayPanel] = useState(false)
+  const [today, setToday] = useState('')
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => { setToday(new Date().toISOString().slice(0, 10)) }, [])
 
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current
@@ -216,6 +220,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   }
 
   const sortedColumns = [...columns].sort((a, b) => a.order - b.order)
+  const todayDueTasks = today ? tasks.filter((t) => t.dueDate === today && !t.completedAt) : []
 
   return (
     <div className="flex flex-col h-full relative">
@@ -233,6 +238,60 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
           className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-md text-gray-500 hover:text-gray-800 hover:shadow-lg transition-all"
         >
           ›
+        </button>
+      )}
+
+      {/* Today Due Panel */}
+      {showTodayPanel && (
+        <div className="fixed inset-0 z-40 flex justify-end" onClick={() => setShowTodayPanel(false)}>
+          <div
+            className="relative w-full max-w-xs bg-white h-full shadow-2xl flex flex-col overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-semibold text-gray-800">오늘 마감</h2>
+                <p className="text-xs text-gray-400 mt-0.5">{today} · {todayDueTasks.length}개</p>
+              </div>
+              <button onClick={() => setShowTodayPanel(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            </div>
+            <div className="flex-1 px-4 py-4 flex flex-col gap-2">
+              {todayDueTasks.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center mt-8">오늘 마감인 업무가 없습니다</p>
+              ) : (
+                sortedColumns.map((col) => {
+                  const colTasks = todayDueTasks.filter((t) => t.columnId === col.id)
+                  if (colTasks.length === 0) return null
+                  return (
+                    <section key={col.id}>
+                      <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">{col.name}</h3>
+                      {colTasks.map((task) => (
+                        <button
+                          key={task.id}
+                          onClick={() => { setEditingTask(task); setShowTodayPanel(false) }}
+                          className="w-full text-left py-2.5 px-3 mb-1 bg-gray-50 rounded-lg border border-gray-100 hover:border-orange-200 hover:bg-orange-50 transition-colors"
+                        >
+                          <p className="text-sm text-gray-800 font-medium">{task.title}</p>
+                          {task.memo && <p className="text-xs text-gray-400 mt-0.5 truncate">{task.memo}</p>}
+                        </button>
+                      ))}
+                    </section>
+                  )
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Today Due Floating Button */}
+      {todayDueTasks.length > 0 && (
+        <button
+          onClick={() => setShowTodayPanel(true)}
+          className="absolute top-0 right-14 z-10 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-orange-500 text-white shadow-sm hover:bg-orange-600 transition-colors"
+        >
+          오늘 마감
+          <span className="font-bold">{todayDueTasks.length}</span>
         </button>
       )}
 
