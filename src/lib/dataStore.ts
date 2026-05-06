@@ -2,11 +2,12 @@
 // API Route Handler에서만 사용 (클라이언트에서 직접 import 금지)
 import { readFile, writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
-import type { Task, Column } from './types'
+import type { Task, Column, CalendarEvent } from './types'
 
 const DATA_DIR = join(process.cwd(), 'data')
 const TASKS_FILE = join(DATA_DIR, 'tasks.json')
 const COLUMNS_FILE = join(DATA_DIR, 'columns.json')
+const EVENTS_FILE = join(DATA_DIR, 'calendar-events.json')
 
 const DEFAULT_COLUMNS: Column[] = [
   { id: 'col-1', name: '미분류', order: 0, isCompletedColumn: false },
@@ -45,4 +46,18 @@ export async function readColumns(): Promise<Column[]> {
 export async function writeColumns(columns: Column[]): Promise<void> {
   await ensureDir()
   await writeFile(COLUMNS_FILE, JSON.stringify(columns, null, 2), 'utf-8')
+}
+
+export async function readEvents(): Promise<CalendarEvent[]> {
+  try {
+    const content = await readFile(EVENTS_FILE, 'utf-8')
+    return JSON.parse(content) as CalendarEvent[]
+  } catch {
+    return []
+  }
+}
+
+export async function writeEvents(events: CalendarEvent[]): Promise<void> {
+  await ensureDir()
+  await writeFile(EVENTS_FILE, JSON.stringify(events, null, 2), 'utf-8')
 }

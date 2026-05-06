@@ -16,3 +16,14 @@ export interface Column {
   order: number                // 보드에서 좌→우 순서
   isCompletedColumn: boolean   // true이면 이 컬럼으로 이동 시 completedAt 기록
 }
+
+export type LeaveType = '연차' | '오전반차' | '오후반차' | '오전반반차' | '오후반반차'
+export type EventType = 'holiday' | LeaveType
+
+export interface CalendarEvent {
+  id: string
+  date: string        // 'YYYY-MM-DD'
+  type: EventType
+  name?: string       // holiday 타입만 필수, 나머지는 type 이름 그대로 표시
+  createdAt: string
+}
