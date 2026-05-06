@@ -101,41 +101,66 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
               )}
 
               <div className="w-full flex flex-col gap-0.5 mt-0.5">
-                {created.length > 0 && (
-                  <>
-                    {created.slice(0, MAX).map((t) => (
-                      <span key={t.id} className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
-                        ${isSelected ? 'bg-white/20 text-white' : 'bg-violet-100 text-violet-700'}`}>
-                        {t.title}
-                      </span>
-                    ))}
-                    {created.length > MAX && (
-                      <span className={`text-[10px] px-1 ${isSelected ? 'text-violet-200' : 'text-violet-400'}`}>
-                        +{created.length - MAX}
-                      </span>
-                    )}
-                  </>
-                )}
-                {completed.length > 0 && (
-                  <>
-                    {completed.slice(0, MAX).map((t) => (
-                      <span key={t.id} className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
-                        ${isSelected ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'}`}>
-                        {t.title}
-                      </span>
-                    ))}
-                    {completed.length > MAX && (
-                      <span className={`text-[10px] px-1 ${isSelected ? 'text-green-200' : 'text-green-500'}`}>
-                        +{completed.length - MAX}
-                      </span>
-                    )}
-                  </>
-                )}
-                {passing.length > 0 && (
-                  <span className={`text-[10px] px-1 ${isSelected ? 'text-blue-200' : 'text-gray-400'}`}>
-                    경유 {passing.length}개
-                  </span>
-                )}
+                {/* 모바일: 카운트 뱃지만 */}
+                <div className="flex flex-wrap gap-0.5 sm:hidden">
+                  {created.length > 0 && (
+                    <span className={`text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-medium
+                      ${isSelected ? 'bg-white/20 text-white' : 'bg-violet-100 text-violet-700'}`}>
+                      {created.length}
+                    </span>
+                  )}
+                  {completed.length > 0 && (
+                    <span className={`text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-medium
+                      ${isSelected ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'}`}>
+                      {completed.length}
+                    </span>
+                  )}
+                  {passing.length > 0 && (
+                    <span className={`text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-medium
+                      ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                      {passing.length}
+                    </span>
+                  )}
+                </div>
+
+                {/* 데스크탑: 제목 pill + 초과 */}
+                <div className="hidden sm:flex flex-col gap-0.5">
+                  {created.length > 0 && (
+                    <>
+                      {created.slice(0, MAX).map((t) => (
+                        <span key={t.id} className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
+                          ${isSelected ? 'bg-white/20 text-white' : 'bg-violet-100 text-violet-700'}`}>
+                          {t.title}
+                        </span>
+                      ))}
+                      {created.length > MAX && (
+                        <span className={`text-[10px] px-1 ${isSelected ? 'text-violet-200' : 'text-violet-400'}`}>
+                          +{created.length - MAX}
+                        </span>
+                      )}
+                    </>
+                  )}
+                  {completed.length > 0 && (
+                    <>
+                      {completed.slice(0, MAX).map((t) => (
+                        <span key={t.id} className={`w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight
+                          ${isSelected ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'}`}>
+                          {t.title}
+                        </span>
+                      ))}
+                      {completed.length > MAX && (
+                        <span className={`text-[10px] px-1 ${isSelected ? 'text-green-200' : 'text-green-500'}`}>
+                          +{completed.length - MAX}
+                        </span>
+                      )}
+                    </>
+                  )}
+                  {passing.length > 0 && (
+                    <span className={`text-[10px] px-1 ${isSelected ? 'text-blue-200' : 'text-gray-400'}`}>
+                      경유 {passing.length}개
+                    </span>
+                  )}
+                </div>
               </div>
             </button>
           )
