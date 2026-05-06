@@ -66,7 +66,7 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
           const isSaturday = date.getDay() === 6
           const holiday = getHolidayName(dateStr)
 
-          const MAX = 2 // 카테고리별 표시 개수
+          const MAX = 3 // 카테고리별 표시 개수
 
           return (
             <button
@@ -111,7 +111,7 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
                     ))}
                     {created.length > MAX && (
                       <span className={`text-[10px] px-1 ${isSelected ? 'text-violet-200' : 'text-violet-400'}`}>
-                        그외 {created.length - MAX}개
+                        +{created.length - MAX}
                       </span>
                     )}
                   </>
@@ -126,7 +126,7 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
                     ))}
                     {completed.length > MAX && (
                       <span className={`text-[10px] px-1 ${isSelected ? 'text-green-200' : 'text-green-500'}`}>
-                        그외 {completed.length - MAX}개
+                        +{completed.length - MAX}
                       </span>
                     )}
                   </>
