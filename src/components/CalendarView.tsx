@@ -116,13 +116,11 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
 
               {leaveEvents.length > 0 && (
                 <>
-                  {/* 데스크탑: 연차 pill */}
-                  <span className={`hidden sm:block w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight font-medium
-                    ${isSelected ? 'bg-white/20 text-white' : 'bg-orange-100 text-orange-600'}`}>
+                  <span className={`hidden sm:block w-full truncate text-[10px] px-0.5 leading-tight font-medium
+                    ${isSelected ? 'text-amber-200' : 'text-amber-500'}`}>
                     {leaveEvents[0].type}{leaveEvents.length > 1 ? ` 외 ${leaveEvents.length - 1}` : ''}
                   </span>
-                  {/* 모바일: 주황 점 */}
-                  <span className={`sm:hidden w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-orange-300' : 'bg-orange-400'}`} />
+                  <span className={`sm:hidden w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-amber-300' : 'bg-amber-400'}`} />
                 </>
               )}
 
