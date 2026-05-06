@@ -21,13 +21,15 @@ export default function CalendarPage() {
   }, [])
 
   return (
-    <div className="w-full">
-      <h1 className="px-4 pt-4 text-xl font-bold text-gray-800 md:hidden">캘린더</h1>
+    <div className="w-full p-4 md:p-6">
+      <h1 className="mb-4 text-xl font-bold text-gray-800 md:hidden">캘린더</h1>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
       <CalendarView
         tasks={tasks}
         onDayClick={setSelectedDate}
         selectedDate={selectedDate}
       />
+      </div>
       <DaySidePanel
         dateStr={selectedDate}
         tasks={tasks}
