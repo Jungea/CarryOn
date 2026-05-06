@@ -5,17 +5,19 @@
 import { useState } from 'react'
 import { getCalendarDays, getTasksForDate, toDateString } from '@/lib/calendarUtils'
 import { getHolidayName } from '@/lib/holidays'
-import type { Task } from '@/lib/types'
+import type { Task, CalendarEvent } from '@/lib/types'
 
 interface CalendarViewProps {
   tasks: Task[]
+  events: CalendarEvent[]
   onDayClick: (dateStr: string) => void
   selectedDate: string | null
+  onSettingsClick: () => void
 }
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
-export default function CalendarView({ tasks, onDayClick, selectedDate }: CalendarViewProps) {
+export default function CalendarView({ tasks, events, onDayClick, selectedDate, onSettingsClick }: CalendarViewProps) {
   const today = new Date()
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
@@ -41,7 +43,10 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
         <h2 className="text-xl font-bold text-gray-800 tracking-tight">
           {year}년 {month + 1}월
         </h2>
-        <button onClick={nextMonth} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-500 text-lg transition-colors">›</button>
+        <div className="flex items-center gap-1">
+          <button onClick={nextMonth} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-500 text-lg transition-colors">›</button>
+          <button onClick={onSettingsClick} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors text-base" title="설정">⚙</button>
+        </div>
       </div>
 
       {/* Weekday headers */}
@@ -64,7 +69,13 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
           const isSelected = dateStr === selectedDate
           const isSunday = date.getDay() === 0
           const isSaturday = date.getDay() === 6
+
           const holiday = getHolidayName(dateStr)
+          const dayEvents = events.filter((e) => e.date === dateStr)
+          const customHoliday = dayEvents.find((e) => e.type === 'holiday')
+          const leaveEvents = dayEvents.filter((e) => e.type !== 'holiday')
+          const effectiveHoliday = holiday ?? customHoliday?.name ?? null
+          const isHolidayDay = !!effectiveHoliday
 
           const MAX = 3 // 카테고리별 표시 개수
 
@@ -87,19 +98,31 @@ export default function CalendarView({ tasks, onDayClick, selectedDate }: Calend
                 className={`
                   text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
                   ${isToday && !isSelected ? 'bg-blue-500 text-white' : ''}
-                  ${isSelected ? 'text-white' : isSunday || holiday ? 'text-red-500' : isSaturday ? 'text-blue-500' : 'text-gray-700'}
+                  ${isSelected ? 'text-white' : isSunday || isHolidayDay ? 'text-red-500' : isSaturday ? 'text-blue-500' : 'text-gray-700'}
                 `}
               >
                 {date.getDate()}
               </span>
 
-              {holiday && (
+              {effectiveHoliday && (
                 <>
                   <span className={`hidden sm:block w-full truncate text-[10px] px-0.5 leading-tight font-medium
                     ${isSelected ? 'text-red-200' : 'text-red-500'}`}>
-                    {holiday}
+                    {effectiveHoliday}
                   </span>
                   <span className={`sm:hidden w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-red-300' : 'bg-red-500'}`} />
+                </>
+              )}
+
+              {leaveEvents.length > 0 && (
+                <>
+                  {/* 데스크탑: 연차 pill */}
+                  <span className={`hidden sm:block w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight font-medium
+                    ${isSelected ? 'bg-white/20 text-white' : 'bg-orange-100 text-orange-600'}`}>
+                    {leaveEvents[0].type}{leaveEvents.length > 1 ? ` 외 ${leaveEvents.length - 1}` : ''}
+                  </span>
+                  {/* 모바일: 주황 점 */}
+                  <span className={`sm:hidden w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-orange-300' : 'bg-orange-400'}`} />
                 </>
               )}
 
