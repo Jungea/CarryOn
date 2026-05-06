@@ -4,3 +4,27 @@
 * {
   font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
+
+.board-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+  scroll-snap-type: x proximity;
+}
+
+.board-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.board-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0 16px;
+}
+
+.board-scroll::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 9999px;
+}
+
+.board-scroll::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}

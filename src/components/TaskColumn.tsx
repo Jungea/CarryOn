@@ -71,7 +71,7 @@ export default function TaskColumn({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex-shrink-0 w-72 bg-gray-50 rounded-xl flex flex-col max-h-full"
+      className="flex-shrink-0 w-72 bg-gray-50 rounded-xl flex flex-col max-h-full snap-start"
     >
       {/* Column Header */}
       <div
