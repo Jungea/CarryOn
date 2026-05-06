@@ -21,7 +21,7 @@ export default function CalendarPage() {
   }, [])
 
   return (
-    <div className="max-w-2xl mx-auto w-full">
+    <div className="w-full">
       <h1 className="px-4 pt-4 text-xl font-bold text-gray-800 md:hidden">캘린더</h1>
       <CalendarView
         tasks={tasks}
