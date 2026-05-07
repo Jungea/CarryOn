@@ -14,26 +14,42 @@ interface CalendarViewProps {
   onDayClick: (dateStr: string) => void
   selectedDate: string | null
   onSettingsClick: () => void
+  searchQuery?: string
+  year?: number
+  month?: number
+  onYearMonthChange?: (year: number, month: number) => void
 }
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
-export default function CalendarView({ tasks, events, onDayClick, selectedDate, onSettingsClick }: CalendarViewProps) {
+export default function CalendarView({ tasks, events, onDayClick, selectedDate, onSettingsClick, searchQuery = '', year: yearProp, month: monthProp, onYearMonthChange }: CalendarViewProps) {
   const today = new Date()
-  const [year, setYear] = useState(today.getFullYear())
-  const [month, setMonth] = useState(today.getMonth())
+  const [yearLocal, setYearLocal] = useState(today.getFullYear())
+  const [monthLocal, setMonthLocal] = useState(today.getMonth())
+
+  const year = yearProp ?? yearLocal
+  const month = monthProp ?? monthLocal
+
+  function setYear(y: number) { onYearMonthChange ? onYearMonthChange(y, month) : setYearLocal(y) }
+  function setMonth(m: number) { onYearMonthChange ? onYearMonthChange(year, m) : setMonthLocal(m) }
 
   const days = getCalendarDays(year, month)
   const todayStr = toDateString(today.toISOString())
 
+  const q = searchQuery.trim().toLowerCase()
+  const matchedTasks = q
+    ? tasks.filter((t) => t.title.toLowerCase().includes(q) || t.memo?.toLowerCase().includes(q))
+    : []
+  const matchedDates = new Set(matchedTasks.map((t) => t.dueDate ?? t.createdAt.slice(0, 10)))
+
   function prevMonth() {
-    if (month === 0) { setYear(y => y - 1); setMonth(11) }
-    else setMonth(m => m - 1)
+    if (month === 0) { setYear(year - 1); setMonth(11) }
+    else setMonth(month - 1)
   }
 
   function nextMonth() {
-    if (month === 11) { setYear(y => y + 1); setMonth(0) }
-    else setMonth(m => m + 1)
+    if (month === 11) { setYear(year + 1); setMonth(0) }
+    else setMonth(month + 1)
   }
 
   return (
@@ -70,6 +86,11 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
           const isSelected = dateStr === selectedDate
           const isSunday = date.getDay() === 0
           const isSaturday = date.getDay() === 6
+          const isMatched = q ? matchedDates.has(dateStr) : false
+          const isDimmed = q && !isMatched
+          const matchedTasksForDate = isMatched
+            ? matchedTasks.filter((t) => (t.dueDate ?? t.createdAt.slice(0, 10)) === dateStr)
+            : []
 
           const holiday = getHolidayName(dateStr)
           const dayEvents = events.filter((e) => e.date === dateStr)
@@ -89,11 +110,14 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
                 flex flex-col items-start p-1.5 rounded-lg min-h-20 sm:min-h-32 transition-colors w-full
                 ${isSelected
                   ? 'bg-slate-700 text-white'
+                  : isMatched
+                  ? 'bg-amber-50 border border-amber-300 hover:bg-amber-100'
                   : isToday
                   ? 'bg-slate-50 border border-slate-300'
                   : isSunday || isSaturday
                   ? 'bg-gray-50 hover:bg-gray-100'
                   : 'hover:bg-gray-100'}
+                ${isDimmed ? 'opacity-40' : ''}
               `}
             >
               <span
@@ -141,6 +165,19 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
                   </span>
                   <span className={`sm:hidden w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-amber-300' : 'bg-amber-400'}`} />
                 </>
+              )}
+
+              {matchedTasksForDate.length > 0 && (
+                <div className="w-full flex flex-col gap-0.5 mt-0.5">
+                  {matchedTasksForDate.slice(0, 3).map((t) => (
+                    <span key={t.id} className="w-full truncate text-[10px] px-1.5 py-0.5 rounded-full leading-tight bg-amber-400 text-white font-medium">
+                      {t.title}
+                    </span>
+                  ))}
+                  {matchedTasksForDate.length > 3 && (
+                    <span className="text-[10px] px-1 text-amber-600">+{matchedTasksForDate.length - 3}</span>
+                  )}
+                </div>
               )}
 
               <div className="w-full flex flex-col gap-0.5 mt-0.5">

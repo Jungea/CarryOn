@@ -19,6 +19,7 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
   const [dueDate, setDueDate] = useState('')
   const [columnId, setColumnId] = useState('')
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (task) {
@@ -53,7 +54,9 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
 
   async function handleDelete() {
     if (!task || !confirm('업무를 삭제할까요?')) return
+    setDeleting(true)
     await onDelete(task.id)
+    setDeleting(false)
     onClose()
   }
 
@@ -119,9 +122,10 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
         <div className="flex justify-between items-center pt-2">
           <button
             onClick={handleDelete}
-            className="text-sm text-red-500 hover:text-red-700 transition-colors"
+            disabled={deleting}
+            className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50 transition-colors"
           >
-            삭제
+            {deleting ? '삭제 중...' : '삭제'}
           </button>
           <div className="flex gap-2">
             <button

@@ -16,6 +16,10 @@ export default function TopNav() {
     supabase.auth.getUser().then(({ data }) => {
       setEmail(data.user?.email ?? '')
     })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setEmail(session?.user?.email ?? '')
+    })
+    return () => subscription.unsubscribe()
   }, [])
 
   if (pathname === '/login') return null

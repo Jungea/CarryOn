@@ -7,10 +7,27 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { toColumn } from '@/lib/dataStore'
 import type { Column } from '@/lib/types'
 
+const DEFAULT_COLUMNS = [
+  { name: '할 일', order: 0, is_completed_column: false },
+  { name: '진행 중', order: 1, is_completed_column: false },
+  { name: '완료', order: 2, is_completed_column: true },
+]
+
 export async function GET() {
   const supabase = await createSupabaseServerClient()
-  const { data } = await supabase.from('columns').select('*').order('order')
-  return NextResponse.json((data ?? []).map(toColumn))
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { data: existing } = await supabase.from('columns').select('*').order('order')
+
+  if (!existing || existing.length === 0) {
+    const rows = DEFAULT_COLUMNS.map((c) => ({ ...c, id: randomUUID(), user_id: user.id }))
+    await supabase.from('columns').insert(rows)
+    const { data: seeded } = await supabase.from('columns').select('*').order('order')
+    return NextResponse.json((seeded ?? []).map(toColumn))
+  }
+
+  return NextResponse.json(existing.map(toColumn))
 }
 
 export async function PATCH(request: Request) {
