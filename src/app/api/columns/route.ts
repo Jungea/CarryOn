@@ -3,16 +3,18 @@
 // PATCH /api/columns  — 여러 컬럼 일괄 수정 (드래그 후 순서 저장용)
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
-import { supabase } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { toColumn } from '@/lib/dataStore'
 import type { Column } from '@/lib/types'
 
 export async function GET() {
+  const supabase = await createSupabaseServerClient()
   const { data } = await supabase.from('columns').select('*').order('order')
   return NextResponse.json((data ?? []).map(toColumn))
 }
 
 export async function PATCH(request: Request) {
+  const supabase = await createSupabaseServerClient()
   const updates = await request.json() as Partial<Column>[]
 
   await Promise.all(updates.map((u) => {
@@ -28,6 +30,10 @@ export async function PATCH(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const supabase = await createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const body = await request.json()
   const { data: existing } = await supabase.from('columns').select('id')
   const order = typeof body.order === 'number' ? body.order : (existing?.length ?? 0)
@@ -37,6 +43,7 @@ export async function POST(request: Request) {
     name: String(body.name ?? '새 컬럼'),
     order,
     is_completed_column: Boolean(body.isCompletedColumn ?? false),
+    user_id: user.id,
   }
 
   const { data } = await supabase.from('columns').insert(row).select().single()

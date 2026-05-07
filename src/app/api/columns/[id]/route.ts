@@ -1,13 +1,14 @@
 // PUT    /api/columns/[id] — 컬럼 수정
 // DELETE /api/columns/[id] — 컬럼 삭제
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { toColumn } from '@/lib/dataStore'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function PUT(request: Request, { params }: Params) {
   const { id } = await params
+  const supabase = await createSupabaseServerClient()
   const body = await request.json()
 
   const patch: Record<string, unknown> = {}
@@ -22,6 +23,7 @@ export async function PUT(request: Request, { params }: Params) {
 
 export async function DELETE(_request: Request, { params }: Params) {
   const { id } = await params
+  const supabase = await createSupabaseServerClient()
   await supabase.from('columns').delete().eq('id', id)
   return new NextResponse(null, { status: 204 })
 }

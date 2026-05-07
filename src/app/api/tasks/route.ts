@@ -3,16 +3,18 @@
 // PATCH /api/tasks  — 여러 업무 일괄 수정 (드래그 후 순서/컬럼 저장용)
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
-import { supabase } from '@/lib/supabase'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { toTask } from '@/lib/dataStore'
 import type { Task } from '@/lib/types'
 
 export async function GET() {
+  const supabase = await createSupabaseServerClient()
   const { data } = await supabase.from('tasks').select('*').order('order')
   return NextResponse.json((data ?? []).map(toTask))
 }
 
 export async function PATCH(request: Request) {
+  const supabase = await createSupabaseServerClient()
   const updates = await request.json() as Partial<Task>[]
 
   await Promise.all(updates.map((u) => {
@@ -28,6 +30,10 @@ export async function PATCH(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const supabase = await createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const body = await request.json()
 
   const { data: colTasks } = await supabase
@@ -43,6 +49,7 @@ export async function POST(request: Request) {
     created_at: new Date().toISOString(),
     completed_at: null,
     order,
+    user_id: user.id,
   }
 
   const { data } = await supabase.from('tasks').insert(row).select().single()
