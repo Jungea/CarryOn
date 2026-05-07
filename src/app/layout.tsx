@@ -7,6 +7,10 @@ import TopNav from '@/components/TopNav'
 export const metadata: Metadata = {
   title: 'CarryOn',
   description: '개인 업무 관리',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.png',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Task } from '@/lib/types'
+import { ChevronRight } from 'lucide-react'
 
 interface TaskCardProps {
   task: Task
@@ -26,6 +27,7 @@ export default function TaskCard({ task, onEdit, onMoveNext }: TaskCardProps) {
   const [today, setToday] = useState('')
   useEffect(() => { setToday(new Date().toISOString().slice(0, 10)) }, [])
   const isOverdue = task.dueDate && !task.completedAt && today && task.dueDate < today
+  const isDDay = task.dueDate && !task.completedAt && today && task.dueDate === today
   const dueDiff = task.dueDate && today
     ? Math.floor((new Date(task.dueDate).getTime() - new Date(today).getTime()) / 86400000)
     : null
@@ -41,7 +43,13 @@ export default function TaskCard({ task, onEdit, onMoveNext }: TaskCardProps) {
       style={style}
       {...attributes}
       onClick={() => onEdit(task)}
-      className="bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all select-none relative"
+      className={`rounded-lg border cursor-pointer hover:shadow-sm transition-all select-none relative ${
+        isOverdue
+          ? 'bg-red-50 border-red-200 hover:border-red-400'
+          : isDDay
+          ? 'bg-orange-50 border-orange-200 hover:border-orange-400'
+          : 'bg-white border-gray-200 hover:border-slate-400'
+      }`}
     >
       {/* 드래그 핸들 */}
       <div
@@ -80,9 +88,9 @@ export default function TaskCard({ task, onEdit, onMoveNext }: TaskCardProps) {
           {onMoveNext && (
             <button
               onClick={(e) => { e.stopPropagation(); onMoveNext() }}
-              className="sm:hidden ml-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-blue-100 hover:text-blue-500 transition-colors text-sm leading-none flex-shrink-0"
+              className="sm:hidden ml-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-slate-100 hover:text-slate-700 transition-colors text-sm leading-none flex-shrink-0"
             >
-              ›
+              <ChevronRight size={14} />
             </button>
           )}
         </div>

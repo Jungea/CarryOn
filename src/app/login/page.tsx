@@ -30,47 +30,71 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm p-8">
-        <h1 className="text-2xl font-bold text-blue-500 mb-1">CarryOn</h1>
-        <p className="text-sm text-gray-400 mb-8">개인 업무 관리</p>
+    <div className="min-h-screen flex">
+      {/* 왼쪽 브랜드 영역 */}
+      <div className="hidden md:flex flex-col justify-between w-1/2 bg-slate-800 p-12">
+        <div className="flex items-center gap-3">
+            <img src="/icon.svg" alt="" className="h-10 w-10" />
+            <span className="text-2xl font-bold text-white tracking-tight">CarryOn</span>
+          </div>
+        <p className="text-slate-400 text-xs">할 일을 끝까지 가져가세요.</p>
+      </div>
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-500 font-medium">이메일</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="이메일 입력"
-              required
-              autoFocus
-            />
+      {/* 오른쪽 로그인 폼 */}
+      <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 p-8">
+        <div className="w-full max-w-sm">
+          {/* 모바일 로고 */}
+          <div className="md:hidden mb-10 flex justify-center">
+            <div className="flex items-center gap-2">
+                <img src="/icon.svg" alt="" className="h-9 w-9" />
+                <span className="text-2xl font-bold text-slate-800 tracking-tight">CarryOn</span>
+              </div>
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-500 font-medium">비밀번호</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="비밀번호 입력"
-              required
-            />
-          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-1">로그인</h2>
+          <p className="text-sm text-gray-400 mb-8">계속하려면 로그인하세요.</p>
 
-          {error && <p className="text-xs text-red-500">{error}</p>}
+          <form onSubmit={handleLogin} className="flex flex-col gap-5">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-gray-600">이메일</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="border border-gray-200 bg-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all shadow-sm"
+                placeholder="name@example.com"
+                required
+                autoFocus
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-2 bg-blue-500 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors"
-          >
-            {loading ? '로그인 중...' : '로그인'}
-          </button>
-        </form>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-gray-600">비밀번호</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="border border-gray-200 bg-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all shadow-sm"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            {error && (
+              <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-1 bg-slate-800 text-white rounded-xl py-3 text-sm font-semibold hover:bg-slate-700 disabled:opacity-50 transition-colors shadow-sm"
+            >
+              {loading ? '로그인 중...' : '로그인'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )

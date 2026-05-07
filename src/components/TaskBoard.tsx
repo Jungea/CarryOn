@@ -2,7 +2,7 @@
 // tasks/columns 상태 보관, DnD 이벤트 처리, API 호출 담당
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -20,6 +20,7 @@ import TaskCard from './TaskCard'
 import TaskDetailModal from './TaskDetailModal'
 import type { Column, Task } from '@/lib/types'
 import * as store from '@/lib/taskStore'
+import { Search, X } from 'lucide-react'
 
 interface TaskBoardProps {
   initialTasks: Task[]
@@ -34,32 +35,11 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   const [activeColumn, setActiveColumn] = useState<Column | null>(null)
   const [showTodayPanel, setShowTodayPanel] = useState(false)
   const [today, setToday] = useState('')
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { setToday(new Date().toISOString().slice(0, 10)) }, [])
-
-  const updateScrollState = useCallback(() => {
-    const el = scrollRef.current
-    if (!el) return
-    setCanScrollLeft(el.scrollLeft > 4)
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
-  }, [])
-
-  useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-    updateScrollState()
-    el.addEventListener('scroll', updateScrollState)
-    const ro = new ResizeObserver(updateScrollState)
-    ro.observe(el)
-    return () => { el.removeEventListener('scroll', updateScrollState); ro.disconnect() }
-  }, [updateScrollState])
-
-  function scrollBoard(dir: 'left' | 'right') {
-    scrollRef.current?.scrollBy({ left: dir === 'left' ? -304 : 304, behavior: 'smooth' })
-  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -250,23 +230,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   const todayDueTasks = today ? tasks.filter((t) => t.dueDate === today && !t.completedAt) : []
 
   return (
-    <div className="flex flex-col h-full relative">
-      {canScrollLeft && (
-        <button
-          onClick={() => scrollBoard('left')}
-          className="absolute left-2 top-3 z-20 w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-md text-gray-500 hover:text-gray-800 hover:shadow-lg transition-all"
-        >
-          ‹
-        </button>
-      )}
-      {canScrollRight && (
-        <button
-          onClick={() => scrollBoard('right')}
-          className="absolute right-2 top-3 z-20 w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-md text-gray-500 hover:text-gray-800 hover:shadow-lg transition-all"
-        >
-          ›
-        </button>
-      )}
+    <div className="flex flex-col h-full">
 
       {/* Today Due Panel */}
       {showTodayPanel && (
@@ -280,7 +244,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
                 <h2 className="text-base font-semibold text-gray-800">오늘 마감</h2>
                 <p className="text-xs text-gray-400 mt-0.5">{today} · {todayDueTasks.length}개</p>
               </div>
-              <button onClick={() => setShowTodayPanel(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+              <button onClick={() => setShowTodayPanel(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none"><X size={16} /></button>
             </div>
             <div className="flex-1 px-4 py-4 flex flex-col gap-2">
               {todayDueTasks.length === 0 ? (
@@ -311,18 +275,45 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
         </div>
       )}
 
-      {/* Today Due Button */}
-      {todayDueTasks.length > 0 && (
-        <div className="px-4 pb-2 pr-12 flex justify-end">
-          <button
-            onClick={() => setShowTodayPanel(true)}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-orange-500 text-white shadow-sm hover:bg-orange-600 transition-colors"
-          >
-            오늘 마감
-            <span className="font-bold">{todayDueTasks.length}</span>
-          </button>
-        </div>
-      )}
+      {/* Top Bar */}
+      <div className="px-4 pb-2 flex items-center justify-end gap-2">
+        {searchOpen ? (
+          <>
+            <input
+              autoFocus
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery('') } }}
+              placeholder="업무 검색..."
+              className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-500 bg-white"
+            />
+            <button
+              onClick={() => { setSearchOpen(false); setSearchQuery('') }}
+              className="text-xs text-gray-400 hover:text-gray-600 shrink-0"
+            >
+              취소
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              <Search size={16} />
+            </button>
+            {todayDueTasks.length > 0 && (
+              <button
+                onClick={() => setShowTodayPanel(true)}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-orange-500 text-white shadow-sm hover:bg-orange-600 transition-colors"
+              >
+                오늘 마감
+                <span className="font-bold">{todayDueTasks.length}</span>
+              </button>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Board */}
       <DndContext
@@ -342,6 +333,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
                 column={column}
                 tasks={tasks.filter((t) => t.columnId === column.id)}
                 isCardDragging={!!activeTask && activeTask.columnId !== column.id}
+                searchQuery={searchQuery}
                 onAddTask={handleAddTask}
                 onEditTask={setEditingTask}
                 onRenameColumn={handleRenameColumn}
@@ -354,7 +346,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
             {/* Add Column Button */}
             <button
               onClick={handleAddColumn}
-              className="flex-shrink-0 w-72 h-12 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-400 transition-colors text-sm"
+              className="flex-shrink-0 w-72 h-12 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-slate-500 hover:text-slate-500 transition-colors text-sm"
             >
               + 컬럼 추가
             </button>
@@ -391,6 +383,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
           ) : null}
         </DragOverlay>
       </DndContext>
+
 
       {/* Detail Modal */}
       <TaskDetailModal

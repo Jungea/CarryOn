@@ -7,11 +7,13 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import TaskCard from './TaskCard'
 import type { Column, Task } from '@/lib/types'
+import { Check, Pencil, Trash2 } from 'lucide-react'
 
 interface TaskColumnProps {
   column: Column
   tasks: Task[]
   isCardDragging: boolean
+  searchQuery?: string
   onAddTask: (columnId: string, title: string) => Promise<void>
   onEditTask: (task: Task) => void
   onRenameColumn: (id: string, name: string) => Promise<void>
@@ -24,6 +26,7 @@ export default function TaskColumn({
   column,
   tasks,
   isCardDragging,
+  searchQuery = '',
   onAddTask,
   onEditTask,
   onRenameColumn,
@@ -33,7 +36,6 @@ export default function TaskColumn({
 }: TaskColumnProps) {
   const [editing, setEditing] = useState(false)
   const [nameInput, setNameInput] = useState(column.name)
-  const [adding, setAdding] = useState(false)
   const [newTitle, setNewTitle] = useState('')
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
@@ -64,10 +66,20 @@ export default function TaskColumn({
     if (!trimmed) return
     await onAddTask(column.id, trimmed)
     setNewTitle('')
-    setAdding(false)
   }
 
+  const COMPLETED_LIMIT = 10
   const sortedTasks = [...tasks].sort((a, b) => a.order - b.order)
+  const isSearching = searchQuery.trim().length > 0
+  const filteredTasks = isSearching
+    ? sortedTasks.filter((t) => t.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    : sortedTasks
+  const visibleTasks = column.isCompletedColumn && !isSearching
+    ? filteredTasks.slice(0, COMPLETED_LIMIT)
+    : filteredTasks
+  const hiddenCount = column.isCompletedColumn && !isSearching
+    ? Math.max(0, filteredTasks.length - COMPLETED_LIMIT)
+    : 0
 
   return (
     <div
@@ -83,7 +95,7 @@ export default function TaskColumn({
       >
         {editing ? (
           <input
-            className="text-sm font-semibold border-b border-blue-400 bg-transparent outline-none flex-1 mr-2"
+            className="text-sm font-semibold border-b border-slate-500 bg-transparent outline-none flex-1 mr-2"
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
             onBlur={handleRename}
@@ -112,29 +124,40 @@ export default function TaskColumn({
             className={`text-xs px-1 transition-colors ${column.isCompletedColumn ? 'text-green-500 hover:text-gray-400' : 'text-gray-400 hover:text-green-500'}`}
             title={column.isCompletedColumn ? '완료 컬럼 해제' : '완료 컬럼으로 지정'}
           >
-            ✓
+            <Check size={14} />
           </button>
           <button
             onClick={() => { setEditing(true); setNameInput(column.name) }}
             className="text-gray-400 hover:text-gray-600 text-xs px-1"
             title="이름 변경"
           >
-            ✏️
+            <Pencil size={14} />
           </button>
           <button
             onClick={handleDelete}
             className="text-gray-400 hover:text-red-500 text-xs px-1"
             title="컬럼 삭제"
           >
-            🗑️
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
 
       {/* Task List */}
       <div className="flex-1 overflow-y-auto px-3 pb-3 flex flex-col gap-2">
+        {/* Add Task Form */}
+        <form onSubmit={handleAddTask}>
+          <input
+            className="w-full border border-dashed border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 placeholder-gray-300 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 bg-transparent focus:bg-white transition-all"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            placeholder="+ 업무 추가"
+            onKeyDown={(e) => { if (e.key === 'Escape') setNewTitle('') }}
+          />
+        </form>
+
         <SortableContext items={sortedTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-          {sortedTasks.map((task) => (
+          {visibleTasks.map((task) => (
             <TaskCard
               key={task.id}
               task={task}
@@ -143,45 +166,13 @@ export default function TaskColumn({
             />
           ))}
         </SortableContext>
+        {hiddenCount > 0 && (
+          <p className="text-xs text-gray-400 text-center py-1">{hiddenCount}개 숨겨짐 · 검색으로 찾기</p>
+        )}
 
         {/* 드래그 중일 때 하단 드롭 영역 표시 */}
         {isCardDragging && (
           <div className="h-16 rounded-lg border-2 border-dashed border-gray-200 transition-all" />
-        )}
-
-        {/* Add Task Form */}
-        {adding ? (
-          <form onSubmit={handleAddTask} className="flex flex-col gap-2 mt-1">
-            <input
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="업무 제목 입력..."
-              autoFocus
-            />
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="text-xs px-3 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-              >
-                추가
-              </button>
-              <button
-                type="button"
-                onClick={() => setAdding(false)}
-                className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                취소
-              </button>
-            </div>
-          </form>
-        ) : (
-          <button
-            onClick={() => setAdding(true)}
-            className="text-xs text-gray-400 hover:text-gray-600 text-left px-1 py-1 rounded hover:bg-gray-100 transition-colors"
-          >
-            + 업무 추가
-          </button>
         )}
       </div>
     </div>

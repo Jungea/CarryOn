@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { getCalendarDays, getTasksForDate, toDateString } from '@/lib/calendarUtils'
 import { getHolidayName } from '@/lib/holidays'
 import type { Task, CalendarEvent } from '@/lib/types'
+import { ChevronLeft, ChevronRight, Settings } from 'lucide-react'
 
 interface CalendarViewProps {
   tasks: Task[]
@@ -39,13 +40,13 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
     <div className="flex flex-col gap-3 p-4 sm:p-6">
       {/* Header */}
       <div className="flex items-center justify-between px-1">
-        <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-500 text-lg transition-colors">‹</button>
+        <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-500 text-lg transition-colors"><ChevronLeft size={16} /></button>
         <h2 className="text-xl font-bold text-gray-800 tracking-tight">
           {year}년 {month + 1}월
         </h2>
         <div className="flex items-center gap-1">
-          <button onClick={nextMonth} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-500 text-lg transition-colors">›</button>
-          <button onClick={onSettingsClick} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors text-base" title="설정">⚙</button>
+          <button onClick={nextMonth} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-500 text-lg transition-colors"><ChevronRight size={16} /></button>
+          <button onClick={onSettingsClick} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors text-base" title="설정"><Settings size={16} /></button>
         </div>
       </div>
 
@@ -87,9 +88,9 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
               className={`
                 flex flex-col items-start p-1.5 rounded-lg min-h-20 sm:min-h-32 transition-colors w-full
                 ${isSelected
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-slate-700 text-white'
                   : isToday
-                  ? 'bg-blue-50 border border-blue-200'
+                  ? 'bg-slate-50 border border-slate-300'
                   : isSunday || isSaturday
                   ? 'bg-gray-50 hover:bg-gray-100'
                   : 'hover:bg-gray-100'}
@@ -98,8 +99,8 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
               <span
                 className={`
                   text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
-                  ${isToday && !isSelected ? 'bg-blue-500 text-white' : ''}
-                  ${isSelected ? 'text-white' : isSunday || isHolidayDay ? 'text-red-500' : isSaturday ? 'text-blue-500' : 'text-gray-700'}
+                  ${isToday && !isSelected ? 'bg-slate-700 text-white' : ''}
+                  ${isSelected ? 'text-white' : isSunday || isHolidayDay ? 'text-red-500' : isSaturday ? 'text-slate-500' : 'text-gray-700'}
                 `}
               >
                 {date.getDate()}
@@ -198,7 +199,7 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
                     </>
                   )}
                   {passing.length > 0 && (
-                    <span className={`text-[10px] px-1 ${isSelected ? 'text-blue-200' : 'text-gray-400'}`}>
+                    <span className={`text-[10px] px-1 ${isSelected ? 'text-slate-300' : 'text-gray-400'}`}>
                       경유 {passing.length}개
                     </span>
                   )}

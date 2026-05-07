@@ -74,7 +74,7 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
         <div className="flex flex-col gap-1">
           <label className="text-xs text-gray-500 font-medium">제목</label>
           <input
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="업무 제목"
@@ -85,7 +85,7 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
         <div className="flex flex-col gap-1">
           <label className="text-xs text-gray-500 font-medium">메모</label>
           <textarea
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 resize-none"
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
             placeholder="메모 (선택)"
@@ -96,7 +96,7 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
         <div className="flex flex-col gap-1">
           <label className="text-xs text-gray-500 font-medium">컬럼</label>
           <select
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
             value={columnId}
             onChange={(e) => setColumnId(e.target.value)}
           >
@@ -110,7 +110,7 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
           <label className="text-xs text-gray-500 font-medium">마감일</label>
           <input
             type="date"
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
           />
@@ -133,7 +133,7 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
             <button
               onClick={handleSave}
               disabled={saving}
-              className="text-sm px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 transition-colors"
+              className="text-sm px-4 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-50 transition-colors"
             >
               {saving ? '저장 중...' : '저장'}
             </button>

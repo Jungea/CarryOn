@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { getTasksForDate } from '@/lib/calendarUtils'
 import { getHolidayName } from '@/lib/holidays'
 import type { Column, Task, CalendarEvent, EventType } from '@/lib/types'
+import { X } from 'lucide-react'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 const LEAVE_TYPES: EventType[] = ['연차', '오전반차', '오후반차', '오전반반차', '오후반반차']
@@ -16,17 +17,21 @@ interface DaySidePanelProps {
   columns: Column[]
   events: CalendarEvent[]
   onClose: () => void
+  onTaskClick: (task: Task) => void
   onAddEvent: (data: { date: string; type: EventType; name?: string }) => Promise<void>
   onDeleteEvent: (id: string) => Promise<void>
 }
 
-function TaskRow({ task, columns }: { task: Task; columns: Column[] }) {
+function TaskRow({ task, columns, onTaskClick }: { task: Task; columns: Column[]; onTaskClick: (task: Task) => void }) {
   const colName = columns.find((c) => c.id === task.columnId)?.name ?? ''
   return (
-    <div className="py-2 border-b border-gray-100 last:border-0">
+    <button
+      onClick={() => onTaskClick(task)}
+      className="w-full text-left py-2 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded transition-colors"
+    >
       <p className="text-sm text-gray-800">{task.title}</p>
       <p className="text-xs text-gray-400 mt-0.5">{colName}</p>
-    </div>
+    </button>
   )
 }
 
@@ -75,7 +80,7 @@ function QuickAddEvent({
     <div className="flex flex-col gap-2">
       {mode === 'holiday' || mode === 'event' ? (
         <input
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
           placeholder={mode === 'event' ? '일정 이름' : '공휴일 이름'}
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -91,7 +96,7 @@ function QuickAddEvent({
         </select>
       )}
       <div className="flex gap-2">
-        <button onClick={handleAdd} disabled={saving} className="text-xs px-3 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50">
+        <button onClick={handleAdd} disabled={saving} className="text-xs px-3 py-1.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50">
           추가
         </button>
         <button onClick={() => setMode(null)} className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50">
@@ -102,7 +107,7 @@ function QuickAddEvent({
   )
 }
 
-export default function DaySidePanel({ dateStr, tasks, columns, events, onClose, onAddEvent, onDeleteEvent }: DaySidePanelProps) {
+export default function DaySidePanel({ dateStr, tasks, columns, events, onClose, onTaskClick, onAddEvent, onDeleteEvent }: DaySidePanelProps) {
   if (!dateStr) return null
 
   const { created, completed, passing } = getTasksForDate(tasks, dateStr)
@@ -134,7 +139,7 @@ export default function DaySidePanel({ dateStr, tasks, columns, events, onClose,
               <p className="text-xs text-gray-400">업무 {total}개</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none"><X size={16} /></button>
         </div>
 
         <div className="flex-1 px-5 py-4 flex flex-col gap-6">
@@ -154,7 +159,7 @@ export default function DaySidePanel({ dateStr, tasks, columns, events, onClose,
                     <p className="text-sm text-gray-800">{e.name}</p>
                     <p className="text-xs text-gray-400 mt-0.5">커스텀 공휴일</p>
                   </div>
-                  <button onClick={() => onDeleteEvent(e.id)} className="text-gray-300 hover:text-red-400 text-xs px-1">✕</button>
+                  <button onClick={() => onDeleteEvent(e.id)} className="text-gray-300 hover:text-red-400 text-xs px-1"><X size={14} /></button>
                 </div>
               ))}
             </section>
@@ -167,7 +172,7 @@ export default function DaySidePanel({ dateStr, tasks, columns, events, onClose,
               {scheduleEvents.map((e) => (
                 <div key={e.id} className="py-2 border-b border-gray-100 last:border-0 flex items-center justify-between">
                   <p className="text-sm text-gray-800">{e.name}</p>
-                  <button onClick={() => onDeleteEvent(e.id)} className="text-gray-300 hover:text-red-400 text-xs px-1">✕</button>
+                  <button onClick={() => onDeleteEvent(e.id)} className="text-gray-300 hover:text-red-400 text-xs px-1"><X size={14} /></button>
                 </div>
               ))}
             </section>
@@ -180,7 +185,7 @@ export default function DaySidePanel({ dateStr, tasks, columns, events, onClose,
               {leaveEvents.map((e) => (
                 <div key={e.id} className="py-2 border-b border-gray-100 last:border-0 flex items-center justify-between">
                   <p className="text-sm text-gray-800">{e.type}</p>
-                  <button onClick={() => onDeleteEvent(e.id)} className="text-gray-300 hover:text-red-400 text-xs px-1">✕</button>
+                  <button onClick={() => onDeleteEvent(e.id)} className="text-gray-300 hover:text-red-400 text-xs px-1"><X size={14} /></button>
                 </div>
               ))}
             </section>
@@ -189,21 +194,21 @@ export default function DaySidePanel({ dateStr, tasks, columns, events, onClose,
           {created.length > 0 && (
             <section>
               <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">생성된 업무</h3>
-              {created.map((t) => <TaskRow key={t.id} task={t} columns={columns} />)}
+              {created.map((t) => <TaskRow key={t.id} task={t} columns={columns} onTaskClick={onTaskClick} />)}
             </section>
           )}
 
           {completed.length > 0 && (
             <section>
               <h3 className="text-xs font-semibold text-green-500 uppercase mb-2">완료된 업무</h3>
-              {completed.map((t) => <TaskRow key={t.id} task={t} columns={columns} />)}
+              {completed.map((t) => <TaskRow key={t.id} task={t} columns={columns} onTaskClick={onTaskClick} />)}
             </section>
           )}
 
           {passing.length > 0 && (
             <section>
               <h3 className="text-xs font-semibold text-orange-400 uppercase mb-2">경유 중인 업무</h3>
-              {passing.map((t) => <TaskRow key={t.id} task={t} columns={columns} />)}
+              {passing.map((t) => <TaskRow key={t.id} task={t} columns={columns} onTaskClick={onTaskClick} />)}
             </section>
           )}
 

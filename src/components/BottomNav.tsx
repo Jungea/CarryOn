@@ -5,6 +5,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { LayoutDashboard, CalendarDays, LogOut } from 'lucide-react'
 
 export default function BottomNav() {
   const pathname = usePathname()
@@ -24,26 +25,26 @@ export default function BottomNav() {
       <Link
         href="/"
         className={`flex-1 flex flex-col items-center py-3 text-xs gap-1 transition-colors ${
-          pathname === '/' ? 'text-blue-500' : 'text-gray-400'
+          pathname === '/' ? 'text-slate-700' : 'text-gray-400'
         }`}
       >
-        <span className="text-xl">📋</span>
+        <LayoutDashboard size={20} />
         <span>업무</span>
       </Link>
       <Link
         href="/calendar"
         className={`flex-1 flex flex-col items-center py-3 text-xs gap-1 transition-colors ${
-          pathname === '/calendar' ? 'text-blue-500' : 'text-gray-400'
+          pathname === '/calendar' ? 'text-slate-700' : 'text-gray-400'
         }`}
       >
-        <span className="text-xl">📅</span>
+        <CalendarDays size={20} />
         <span>캘린더</span>
       </Link>
       <button
         onClick={handleLogout}
         className="flex-1 flex flex-col items-center py-3 text-xs gap-1 text-gray-400 transition-colors"
       >
-        <span className="text-xl">🚪</span>
+        <LogOut size={20} />
         <span>로그아웃</span>
       </button>
     </nav>

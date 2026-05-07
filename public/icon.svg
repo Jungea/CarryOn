@@ -1,0 +1,38 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="108" fill="#1E293B"/>
+
+  <!-- C -->
+  <path
+    d="M270 150
+       C244 134 210 128 180 138
+       C124 156 88 202 88 256
+       C88 310 124 356 180 374
+       C210 384 244 378 270 362"
+    fill="none"
+    stroke="#F8FAFC"
+    stroke-width="42"
+    stroke-linecap="round"
+  />
+
+  <!-- O as checkbox -->
+  <rect
+    x="264"
+    y="181"
+    width="150"
+    height="150"
+    rx="42"
+    fill="none"
+    stroke="#F8FAFC"
+    stroke-width="34"
+  />
+
+  <!-- Check -->
+  <path
+    d="M308 257L336 285L374 229"
+    fill="none"
+    stroke="#94A3B8"
+    stroke-width="24"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

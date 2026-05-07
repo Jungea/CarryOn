@@ -3,6 +3,7 @@
 
 import { useState } from 'react'
 import type { CalendarEvent, EventType } from '@/lib/types'
+import { X } from 'lucide-react'
 
 const LEAVE_TYPES: EventType[] = ['연차', '오전반차', '오후반차', '오전반반차', '오후반반차']
 
@@ -47,7 +48,7 @@ export default function CalendarSettings({ open, events, onClose, onAddEvent, on
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
           <h2 className="text-base font-semibold text-gray-800">캘린더 설정</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none"><X size={16} /></button>
         </div>
 
         {/* Tabs */}
@@ -80,7 +81,7 @@ export default function CalendarSettings({ open, events, onClose, onAddEvent, on
                 <span className="text-sm text-gray-800">{e.date}</span>
                 <span className="ml-2 text-sm text-gray-500">{tab === 'leave' ? e.type : e.name}</span>
               </div>
-              <button onClick={() => onDeleteEvent(e.id)} className="text-gray-300 hover:text-red-400 text-xs px-1 transition-colors">✕</button>
+              <button onClick={() => onDeleteEvent(e.id)} className="text-gray-300 hover:text-red-400 text-xs px-1 transition-colors"><X size={14} /></button>
             </div>
           ))}
           {(tab === 'event' ? schedules : tab === 'holiday' ? holidays : leaves).length === 0 && (
@@ -93,20 +94,20 @@ export default function CalendarSettings({ open, events, onClose, onAddEvent, on
           <div className="flex gap-2">
             <input
               type="date"
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
             {tab === 'holiday' || tab === 'event' ? (
               <input
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
                 placeholder={tab === 'event' ? '일정 이름' : '공휴일 이름'}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             ) : (
               <select
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
                 value={leaveType as string}
                 onChange={(e) => setLeaveType(e.target.value as EventType)}
               >
@@ -117,7 +118,7 @@ export default function CalendarSettings({ open, events, onClose, onAddEvent, on
           <button
             onClick={handleAdd}
             disabled={saving}
-            className="w-full py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
+            className="w-full py-2 bg-slate-700 text-white text-sm rounded-lg hover:bg-slate-800 disabled:opacity-50 transition-colors"
           >
             {saving ? '추가 중...' : '추가'}
           </button>
