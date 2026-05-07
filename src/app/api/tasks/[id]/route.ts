@@ -17,6 +17,7 @@ export async function PUT(request: Request, { params }: Params) {
   if ('dueDate' in body) patch.due_date = body.dueDate ?? null
   if (body.columnId !== undefined) patch.column_id = body.columnId
   if ('completedAt' in body) patch.completed_at = body.completedAt ?? null
+  if (body.createdAt !== undefined) patch.created_at = body.createdAt
 
   const { data, error } = await supabase.from('tasks').update(patch).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: 'Not found' }, { status: 404 })

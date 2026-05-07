@@ -20,6 +20,7 @@ interface DaySidePanelProps {
   onTaskClick: (task: Task) => void
   onAddEvent: (data: { date: string; type: EventType; name?: string }) => Promise<void>
   onDeleteEvent: (id: string) => Promise<void>
+  onAddTask: (title: string, columnId: string, dueDate: string) => Promise<void>
 }
 
 function TaskRow({ task, columns, onTaskClick }: { task: Task; columns: Column[]; onTaskClick: (task: Task) => void }) {
@@ -107,7 +108,53 @@ function QuickAddEvent({
   )
 }
 
-export default function DaySidePanel({ dateStr, tasks, columns, events, onClose, onTaskClick, onAddEvent, onDeleteEvent }: DaySidePanelProps) {
+function QuickAddTask({ dateStr, columns, onAdd }: {
+  dateStr: string
+  columns: Column[]
+  onAdd: (title: string, columnId: string, dueDate: string) => Promise<void>
+}) {
+  const nonCompleted = columns.filter((c) => !c.isCompletedColumn).sort((a, b) => a.order - b.order)
+  const [title, setTitle] = useState('')
+  const [columnId, setColumnId] = useState(nonCompleted[0]?.id ?? '')
+  const [saving, setSaving] = useState(false)
+
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault()
+    if (!title.trim() || !columnId) return
+    setSaving(true)
+    await onAdd(title.trim(), columnId, dateStr)
+    setTitle('')
+    setSaving(false)
+  }
+
+  return (
+    <form onSubmit={handleAdd} className="flex flex-col gap-2">
+      <input
+        className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+        placeholder="업무 제목"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        disabled={saving}
+      />
+      <select
+        className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+        value={columnId}
+        onChange={(e) => setColumnId(e.target.value)}
+      >
+        {nonCompleted.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+      </select>
+      <button
+        type="submit"
+        disabled={saving || !title.trim()}
+        className="text-xs px-3 py-1.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50"
+      >
+        {saving ? '추가 중...' : '+ 업무 추가'}
+      </button>
+    </form>
+  )
+}
+
+export default function DaySidePanel({ dateStr, tasks, columns, events, onClose, onTaskClick, onAddEvent, onDeleteEvent, onAddTask }: DaySidePanelProps) {
   if (!dateStr) return null
 
   const { created, completed, passing } = getTasksForDate(tasks, dateStr)
@@ -217,9 +264,15 @@ export default function DaySidePanel({ dateStr, tasks, columns, events, onClose,
           )}
 
           {/* 빠른 추가 */}
-          <section className="mt-auto pt-4 border-t border-gray-100">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase mb-3">이 날에 추가</h3>
-            <QuickAddEvent dateStr={dateStr} onAdd={onAddEvent} />
+          <section className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-6">
+            <div>
+              <h3 className="text-xs font-semibold text-gray-400 uppercase mb-3">업무 추가</h3>
+              <QuickAddTask dateStr={dateStr} columns={columns} onAdd={onAddTask} />
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold text-gray-400 uppercase mb-3">일정 추가</h3>
+              <QuickAddEvent dateStr={dateStr} onAdd={onAddEvent} />
+            </div>
           </section>
         </div>
       </div>

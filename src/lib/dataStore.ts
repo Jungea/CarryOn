@@ -47,6 +47,13 @@ export function toCalendarEvent(row: any): CalendarEvent {
 
 export async function readTasks(): Promise<Task[]> {
   const supabase = await createSupabaseServerClient()
+  const now = new Date().toISOString()
+  const { data } = await supabase.from('tasks').select('*').lte('created_at', now).order('order')
+  return (data ?? []).map(toTask)
+}
+
+export async function readAllTasks(): Promise<Task[]> {
+  const supabase = await createSupabaseServerClient()
   const { data } = await supabase.from('tasks').select('*').order('order')
   return (data ?? []).map(toTask)
 }

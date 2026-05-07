@@ -5,7 +5,7 @@ import CalendarView from '@/components/CalendarView'
 import DaySidePanel from '@/components/DaySidePanel'
 import CalendarSettings from '@/components/CalendarSettings'
 import TaskDetailModal from '@/components/TaskDetailModal'
-import { updateTask, deleteTask } from '@/lib/taskStore'
+import { updateTask, deleteTask, createTask } from '@/lib/taskStore'
 import { createEvent, deleteEvent } from '@/lib/eventStore'
 import type { Column, Task, CalendarEvent, EventType } from '@/lib/types'
 import { Search, X } from 'lucide-react'
@@ -62,6 +62,12 @@ export default function CalendarClient({ initialTasks, initialColumns, initialEv
     setSearchQuery('')
   }
 
+  async function handleAddTask(title: string, columnId: string, dueDate: string) {
+    const createdAt = new Date(`${dueDate}T09:00:00`).toISOString()
+    const newTask = await createTask({ title, columnId, order: 0, dueDate, createdAt })
+    setTasks((prev) => [newTask, ...prev])
+  }
+
   async function handleAddEvent(data: { date: string; type: EventType; name?: string }) {
     const newEvent = await createEvent(data)
     setEvents((prev) => [...prev, newEvent])
@@ -72,7 +78,7 @@ export default function CalendarClient({ initialTasks, initialColumns, initialEv
     setEvents((prev) => prev.filter((e) => e.id !== id))
   }
 
-  const dropdown = searchOpen && (
+  const dropdown = searchOpen && q && (
     <div className="absolute right-0 top-full mt-1 w-72 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-64 overflow-y-auto">
       {matchedTasks.length > 0 ? (
         <>
@@ -91,56 +97,38 @@ export default function CalendarClient({ initialTasks, initialColumns, initialEv
             )
           })}
         </>
-      ) : q ? (
+      ) : (
         <p className="text-sm text-gray-400 px-4 py-3">검색 결과가 없습니다</p>
-      ) : null}
+      )}
     </div>
   )
 
   return (
     <div className="w-full p-4 md:p-6">
-      {/* 모바일 헤더 */}
-      <div className="mb-4 flex items-center gap-3 md:hidden">
-        <h1 className="text-xl font-bold text-gray-800 flex-1">캘린더</h1>
-        {searchOpen ? (
-          <div className="relative w-44">
-            <input
-              autoFocus
-              onChange={handleSearchChange}
-              onKeyDown={(e) => { if (e.key === 'Escape') closeSearch() }}
-              placeholder="업무 검색..."
-              className="text-sm border border-gray-300 rounded-lg pl-3 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-500 w-full bg-white"
-            />
-            <button onClick={closeSearch} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              <X size={13} />
-            </button>
-            {dropdown}
-          </div>
-        ) : (
-          <button onClick={() => setSearchOpen(true)} className="text-gray-400 hover:text-gray-600"><Search size={16} /></button>
-        )}
-      </div>
-
-      {/* 데스크탑 헤더 */}
-      <div className="hidden md:flex items-center gap-3 mb-4">
-        <div className="flex-1" />
-        {searchOpen ? (
-          <div className="relative w-56">
-            <input
-              autoFocus
-              onChange={handleSearchChange}
-              onKeyDown={(e) => { if (e.key === 'Escape') closeSearch() }}
-              placeholder="업무 검색..."
-              className="text-sm border border-gray-300 rounded-lg pl-3 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-500 w-full bg-white"
-            />
-            <button onClick={closeSearch} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              <X size={13} />
-            </button>
-            {dropdown}
-          </div>
-        ) : (
-          <button onClick={() => setSearchOpen(true)} className="text-gray-400 hover:text-gray-600"><Search size={16} /></button>
-        )}
+      {/* 헤더 */}
+      <div className="mb-4 h-9 flex items-center gap-3">
+        <h1 className="text-xl font-bold text-gray-800 flex-1 md:hidden">캘린더</h1>
+        <div className="flex-1 hidden md:block" />
+        <div className="relative">
+          {searchOpen ? (
+            <div className="relative w-44 md:w-56">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                autoFocus
+                onChange={handleSearchChange}
+                onKeyDown={(e) => { if (e.key === 'Escape') closeSearch() }}
+                placeholder="업무 검색..."
+                className="text-sm bg-gray-100 rounded-full pl-8 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white w-full transition-colors"
+              />
+              <button onClick={closeSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <X size={13} />
+              </button>
+              {dropdown}
+            </div>
+          ) : (
+            <button onClick={() => setSearchOpen(true)} className="text-gray-400 hover:text-gray-600"><Search size={16} /></button>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
@@ -163,6 +151,7 @@ export default function CalendarClient({ initialTasks, initialColumns, initialEv
         events={events}
         onClose={() => setSelectedDate(null)}
         onTaskClick={setEditingTask}
+        onAddTask={handleAddTask}
         onAddEvent={handleAddEvent}
         onDeleteEvent={handleDeleteEvent}
       />

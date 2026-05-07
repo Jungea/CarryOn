@@ -1,9 +1,9 @@
 import CalendarClient from '@/components/CalendarClient'
-import { readTasks, readColumns, readEvents } from '@/lib/dataStore'
+import { readAllTasks, readColumns, readEvents } from '@/lib/dataStore'
 
 export default async function CalendarPage() {
   const [tasks, columns, events] = await Promise.all([
-    readTasks(),
+    readAllTasks(),
     readColumns(),
     readEvents(),
   ])

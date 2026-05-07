@@ -11,7 +11,7 @@ export async function getTasks(): Promise<Task[]> {
 }
 
 export async function createTask(
-  data: Pick<Task, 'title' | 'columnId' | 'order'> & Partial<Pick<Task, 'memo' | 'dueDate'>>
+  data: Pick<Task, 'title' | 'columnId' | 'order'> & Partial<Pick<Task, 'memo' | 'dueDate' | 'createdAt'>>
 ): Promise<Task> {
   const res = await fetch('/api/tasks', {
     method: 'POST',

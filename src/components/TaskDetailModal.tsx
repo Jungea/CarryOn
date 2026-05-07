@@ -17,15 +17,20 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
   const [title, setTitle] = useState('')
   const [memo, setMemo] = useState('')
   const [dueDate, setDueDate] = useState('')
+  const [createdDate, setCreatedDate] = useState('')
+  const [completedDate, setCompletedDate] = useState('')
   const [columnId, setColumnId] = useState('')
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [showDates, setShowDates] = useState(false)
 
   useEffect(() => {
     if (task) {
       setTitle(task.title)
       setMemo(task.memo)
       setDueDate(task.dueDate ?? '')
+      setCreatedDate(task.createdAt.slice(0, 10))
+      setCompletedDate(task.completedAt ? task.completedAt.slice(0, 10) : '')
       setColumnId(task.columnId)
     }
   }, [task])
@@ -36,17 +41,23 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
     if (!task) return
     setSaving(true)
     const targetCol = columns.find((c) => c.id === columnId)
-    const completedAt = targetCol?.isCompletedColumn && !task.completedAt
-      ? new Date().toISOString()
-      : !targetCol?.isCompletedColumn && task.completedAt
-      ? null
-      : task.completedAt
+    let completedAt: string | null
+    if (completedDate) {
+      completedAt = new Date(`${completedDate}T09:00:00`).toISOString()
+    } else if (targetCol?.isCompletedColumn && !task.completedAt) {
+      completedAt = new Date().toISOString()
+    } else if (!targetCol?.isCompletedColumn && task.completedAt) {
+      completedAt = null
+    } else {
+      completedAt = task.completedAt
+    }
     await onSave(task.id, {
       title: title.trim() || '(제목 없음)',
       memo,
       dueDate: dueDate || null,
       columnId,
       completedAt,
+      createdAt: createdDate ? new Date(`${createdDate}T09:00:00`).toISOString() : task!.createdAt,
     })
     setSaving(false)
     onClose()
@@ -70,9 +81,6 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-semibold text-gray-800">업무 편집</h2>
-        <p className="text-xs text-gray-400">
-          생성일: {new Date(task.createdAt).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-        </p>
 
         <div className="flex flex-col gap-1">
           <label className="text-xs text-gray-500 font-medium">제목</label>
@@ -118,6 +126,35 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
             onChange={(e) => setDueDate(e.target.value)}
           />
         </div>
+        <button
+          type="button"
+          onClick={() => setShowDates((v) => !v)}
+          className="text-xs text-gray-400 hover:text-gray-600 text-left"
+        >
+          {showDates ? '▲ 날짜 접기' : '▼ 생성일 · 완료일 수정'}
+        </button>
+        {showDates && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-gray-500 font-medium">생성일</label>
+              <input
+                type="date"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                value={createdDate}
+                onChange={(e) => setCreatedDate(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-gray-500 font-medium">완료일</label>
+              <input
+                type="date"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                value={completedDate}
+                onChange={(e) => setCompletedDate(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
 
         <div className="flex justify-between items-center pt-2">
           <button

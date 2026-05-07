@@ -33,13 +33,9 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [activeColumn, setActiveColumn] = useState<Column | null>(null)
-  const [showTodayPanel, setShowTodayPanel] = useState(false)
-  const [today, setToday] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => { setToday(new Date().toISOString().slice(0, 10)) }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -227,91 +223,37 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   }
 
   const sortedColumns = [...columns].sort((a, b) => a.order - b.order)
-  const todayDueTasks = today ? tasks.filter((t) => t.dueDate === today && !t.completedAt) : []
 
   return (
     <div className="flex flex-col h-full">
 
-      {/* Today Due Panel */}
-      {showTodayPanel && (
-        <div className="fixed inset-0 z-40 flex justify-end" onClick={() => setShowTodayPanel(false)}>
-          <div
-            className="relative w-full max-w-xs bg-white h-full shadow-2xl flex flex-col overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-base font-semibold text-gray-800">오늘 마감</h2>
-                <p className="text-xs text-gray-400 mt-0.5">{today} · {todayDueTasks.length}개</p>
-              </div>
-              <button onClick={() => setShowTodayPanel(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none"><X size={16} /></button>
-            </div>
-            <div className="flex-1 px-4 py-4 flex flex-col gap-2">
-              {todayDueTasks.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center mt-8">오늘 마감인 업무가 없습니다</p>
-              ) : (
-                sortedColumns.map((col) => {
-                  const colTasks = todayDueTasks.filter((t) => t.columnId === col.id)
-                  if (colTasks.length === 0) return null
-                  return (
-                    <section key={col.id}>
-                      <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">{col.name}</h3>
-                      {colTasks.map((task) => (
-                        <button
-                          key={task.id}
-                          onClick={() => { setEditingTask(task); setShowTodayPanel(false) }}
-                          className="w-full text-left py-2.5 px-3 mb-1 bg-gray-50 rounded-lg border border-gray-100 hover:border-orange-200 hover:bg-orange-50 transition-colors"
-                        >
-                          <p className="text-sm text-gray-800 font-medium">{task.title}</p>
-                          {task.memo && <p className="text-xs text-gray-400 mt-0.5 truncate">{task.memo}</p>}
-                        </button>
-                      ))}
-                    </section>
-                  )
-                })
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Top Bar */}
-      <div className="px-4 pb-2 flex items-center justify-end gap-2">
+      <div className="px-4 pt-1 pb-2 flex items-center justify-end gap-2">
         {searchOpen ? (
-          <>
+          <div className="relative w-full md:w-56">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             <input
               autoFocus
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery('') } }}
               placeholder="업무 검색..."
-              className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-500 bg-white"
+              className="w-full text-sm bg-gray-100 rounded-full pl-8 pr-8 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white transition-colors"
             />
             <button
               onClick={() => { setSearchOpen(false); setSearchQuery('') }}
-              className="text-xs text-gray-400 hover:text-gray-600 shrink-0"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              취소
+              <X size={13} />
             </button>
-          </>
+          </div>
         ) : (
-          <>
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-            >
-              <Search size={16} />
-            </button>
-            {todayDueTasks.length > 0 && (
-              <button
-                onClick={() => setShowTodayPanel(true)}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-orange-500 text-white shadow-sm hover:bg-orange-600 transition-colors"
-              >
-                오늘 마감
-                <span className="font-bold">{todayDueTasks.length}</span>
-              </button>
-            )}
-          </>
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <Search size={16} />
+          </button>
         )}
       </div>
 

@@ -9,7 +9,8 @@ import type { Task } from '@/lib/types'
 
 export async function GET() {
   const supabase = await createSupabaseServerClient()
-  const { data } = await supabase.from('tasks').select('*').order('order')
+  const now = new Date().toISOString()
+  const { data } = await supabase.from('tasks').select('*').lte('created_at', now).order('order')
   return NextResponse.json((data ?? []).map(toTask))
 }
 
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
     memo: String(body.memo ?? ''),
     due_date: body.dueDate ?? null,
     column_id: String(body.columnId),
-    created_at: new Date().toISOString(),
+    created_at: body.createdAt ?? new Date().toISOString(),
     completed_at: null,
     order,
     user_id: user.id,

@@ -71,17 +71,27 @@ export default function TaskColumn({
     setAdding(false)
   }
 
-  const COMPLETED_LIMIT = 10
-  const sortedTasks = [...tasks].sort((a, b) => a.order - b.order)
+  const sortedTasks = column.isCompletedColumn
+    ? [...tasks].sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))
+    : [...tasks].sort((a, b) => a.order - b.order)
   const isSearching = searchQuery.trim().length > 0
   const filteredTasks = isSearching
     ? sortedTasks.filter((t) => t.title.toLowerCase().includes(searchQuery.toLowerCase()))
     : sortedTasks
-  const visibleTasks = column.isCompletedColumn && !isSearching
-    ? filteredTasks.slice(0, COMPLETED_LIMIT)
+
+  const fiveDaysAgo = new Date()
+  fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5)
+  const recentTasks = sortedTasks.filter((t) => t.completedAt && new Date(t.completedAt) >= fiveDaysAgo)
+  const completedVisible = recentTasks.length >= 10
+    ? recentTasks
+    : sortedTasks.slice(0, Math.max(recentTasks.length, 10))
+  const visibleTasks = isSearching
+    ? filteredTasks
+    : column.isCompletedColumn
+    ? completedVisible
     : filteredTasks
   const hiddenCount = column.isCompletedColumn && !isSearching
-    ? Math.max(0, filteredTasks.length - COMPLETED_LIMIT)
+    ? Math.max(0, sortedTasks.length - visibleTasks.length)
     : 0
 
   return (
@@ -149,7 +159,7 @@ export default function TaskColumn({
       {/* Task List */}
       <div className="flex-1 overflow-y-auto px-3 pb-3 flex flex-col gap-2">
         {/* Add Task Form */}
-        <form onSubmit={handleAddTask}>
+        <form onSubmit={handleAddTask} className="pt-1">
           <input
             className="w-full border border-dashed border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 placeholder-gray-300 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 bg-transparent focus:bg-white transition-all disabled:opacity-50"
             value={newTitle}
