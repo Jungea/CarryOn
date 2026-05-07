@@ -254,7 +254,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
       {canScrollLeft && (
         <button
           onClick={() => scrollBoard('left')}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-md text-gray-500 hover:text-gray-800 hover:shadow-lg transition-all"
+          className="absolute left-2 top-3 z-20 w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-md text-gray-500 hover:text-gray-800 hover:shadow-lg transition-all"
         >
           ‹
         </button>
@@ -262,7 +262,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
       {canScrollRight && (
         <button
           onClick={() => scrollBoard('right')}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-md text-gray-500 hover:text-gray-800 hover:shadow-lg transition-all"
+          className="absolute right-2 top-3 z-20 w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-md text-gray-500 hover:text-gray-800 hover:shadow-lg transition-all"
         >
           ›
         </button>
@@ -313,7 +313,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
 
       {/* Today Due Button */}
       {todayDueTasks.length > 0 && (
-        <div className="px-4 pb-2 flex justify-end">
+        <div className="px-4 pb-2 pr-12 flex justify-end">
           <button
             onClick={() => setShowTodayPanel(true)}
             className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-orange-500 text-white shadow-sm hover:bg-orange-600 transition-colors"

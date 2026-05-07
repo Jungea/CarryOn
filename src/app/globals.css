@@ -9,6 +9,7 @@
   scrollbar-width: thin;
   scrollbar-color: #e2e8f0 transparent;
   scroll-snap-type: x proximity;
+  scroll-padding-left: 1rem;
 }
 
 @media (max-width: 639px) {
