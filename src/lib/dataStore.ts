@@ -1,13 +1,7 @@
-// 서버 전용: data/tasks.json, data/columns.json 파일 읽기/쓰기
-// API Route Handler에서만 사용 (클라이언트에서 직접 import 금지)
-import { readFile, writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
+// 서버 전용: Supabase에서 데이터 읽기
+// API Route Handler 및 Server Component에서 사용
+import { supabase } from './supabase'
 import type { Task, Column, CalendarEvent } from './types'
-
-const DATA_DIR = join(process.cwd(), 'data')
-const TASKS_FILE = join(DATA_DIR, 'tasks.json')
-const COLUMNS_FILE = join(DATA_DIR, 'columns.json')
-const EVENTS_FILE = join(DATA_DIR, 'calendar-events.json')
 
 const DEFAULT_COLUMNS: Column[] = [
   { id: 'col-1', name: '미분류', order: 0, isCompletedColumn: false },
@@ -16,48 +10,60 @@ const DEFAULT_COLUMNS: Column[] = [
   { id: 'col-4', name: '완료', order: 3, isCompletedColumn: true },
 ]
 
-async function ensureDir() {
-  await mkdir(DATA_DIR, { recursive: true })
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toTask(row: any): Task {
+  return {
+    id: row.id,
+    title: row.title,
+    memo: row.memo ?? '',
+    columnId: row.column_id,
+    order: row.order,
+    dueDate: row.due_date ?? null,
+    createdAt: row.created_at,
+    completedAt: row.completed_at ?? null,
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toColumn(row: any): Column {
+  return {
+    id: row.id,
+    name: row.name,
+    order: row.order,
+    isCompletedColumn: row.is_completed_column,
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toCalendarEvent(row: any): CalendarEvent {
+  return {
+    id: row.id,
+    date: row.date,
+    type: row.type,
+    name: row.name ?? undefined,
+    createdAt: row.created_at,
+  }
 }
 
 export async function readTasks(): Promise<Task[]> {
-  try {
-    const content = await readFile(TASKS_FILE, 'utf-8')
-    return JSON.parse(content) as Task[]
-  } catch {
-    return []
-  }
-}
-
-export async function writeTasks(tasks: Task[]): Promise<void> {
-  await ensureDir()
-  await writeFile(TASKS_FILE, JSON.stringify(tasks, null, 2), 'utf-8')
+  const { data } = await supabase.from('tasks').select('*').order('order')
+  return (data ?? []).map(toTask)
 }
 
 export async function readColumns(): Promise<Column[]> {
-  try {
-    const content = await readFile(COLUMNS_FILE, 'utf-8')
-    return JSON.parse(content) as Column[]
-  } catch {
+  const { data } = await supabase.from('columns').select('*').order('order')
+  if (!data || data.length === 0) {
+    await supabase.from('columns').insert(DEFAULT_COLUMNS.map((c) => ({
+      id: c.id, name: c.name, order: c.order, is_completed_column: c.isCompletedColumn,
+    })))
     return DEFAULT_COLUMNS
   }
-}
-
-export async function writeColumns(columns: Column[]): Promise<void> {
-  await ensureDir()
-  await writeFile(COLUMNS_FILE, JSON.stringify(columns, null, 2), 'utf-8')
+  return data.map(toColumn)
 }
 
 export async function readEvents(): Promise<CalendarEvent[]> {
-  try {
-    const content = await readFile(EVENTS_FILE, 'utf-8')
-    return JSON.parse(content) as CalendarEvent[]
-  } catch {
-    return []
-  }
+  const { data } = await supabase.from('calendar_events').select('*').order('created_at')
+  return (data ?? []).map(toCalendarEvent)
 }
 
-export async function writeEvents(events: CalendarEvent[]): Promise<void> {
-  await ensureDir()
-  await writeFile(EVENTS_FILE, JSON.stringify(events, null, 2), 'utf-8')
-}
+export { toTask, toColumn, toCalendarEvent }

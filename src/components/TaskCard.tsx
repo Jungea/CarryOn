@@ -40,42 +40,52 @@ export default function TaskCard({ task, onEdit, onMoveNext }: TaskCardProps) {
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
       onClick={() => onEdit(task)}
-      className="bg-white rounded-lg border border-gray-200 p-3 cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all select-none relative"
+      className="bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-blue-300 hover:shadow-sm transition-all select-none relative"
     >
-      <p className="text-sm font-medium text-gray-800 leading-snug">
-        {task.title}
-        {task.memo && <span className="ml-1.5 text-xs text-gray-400 font-normal">≡</span>}
-      </p>
+      {/* 드래그 핸들 */}
+      <div
+        {...listeners}
+        onClick={(e) => e.stopPropagation()}
+        className="flex items-center justify-center h-4 cursor-grab active:cursor-grabbing"
+      >
+        <div className="w-8 h-1 rounded-full bg-gray-200" />
+      </div>
 
-      {!task.completedAt && (
-        <p className="mt-1 text-xs text-gray-400">
-          {createdDate} · +{elapsedDays}일
+      <div className="px-3 pb-3">
+        <p className="text-sm font-medium text-gray-800 leading-snug">
+          {task.title}
+          {task.memo && <span className="ml-1.5 text-xs text-gray-400 font-normal">≡</span>}
         </p>
-      )}
 
-      <div className="mt-1 flex items-center justify-between">
-        {task.completedAt ? (
-          <span className="text-xs text-green-700/60">
-            완료 {task.completedAt.slice(0, 10)}
-          </span>
-        ) : task.dueDate ? (
-          <span className={`text-xs ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
-            {task.dueDate} {dueDiff !== null && (dueDiff < 0 ? `${Math.abs(dueDiff)}일 초과` : `D-${dueDiff}`)}
-          </span>
-        ) : (
-          <span />
+        {!task.completedAt && (
+          <p className="mt-1 text-xs text-gray-400">
+            {createdDate} · +{elapsedDays}일
+          </p>
         )}
 
-        {onMoveNext && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onMoveNext() }}
-            className="sm:hidden ml-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-blue-100 hover:text-blue-500 transition-colors text-sm leading-none flex-shrink-0"
-          >
-            ›
-          </button>
-        )}
+        <div className="mt-1 flex items-center justify-between">
+          {task.completedAt ? (
+            <span className="text-xs text-green-700/60">
+              완료 {task.completedAt.slice(0, 10)}
+            </span>
+          ) : task.dueDate ? (
+            <span className={`text-xs ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
+              {task.dueDate} {dueDiff !== null && (dueDiff < 0 ? `${Math.abs(dueDiff)}일 초과` : `D-${dueDiff}`)}
+            </span>
+          ) : (
+            <span />
+          )}
+
+          {onMoveNext && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onMoveNext() }}
+              className="sm:hidden ml-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-blue-100 hover:text-blue-500 transition-colors text-sm leading-none flex-shrink-0"
+            >
+              ›
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

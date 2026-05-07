@@ -1,46 +1,50 @@
-// GET  /api/tasks       — 전체 목록 조회
-// POST /api/tasks       — 새 업무 생성
-// PATCH /api/tasks      — 여러 업무 일괄 수정 (드래그 후 순서/컬럼 저장용)
+// GET   /api/tasks  — 전체 목록 조회
+// POST  /api/tasks  — 새 업무 생성
+// PATCH /api/tasks  — 여러 업무 일괄 수정 (드래그 후 순서/컬럼 저장용)
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
-import { readTasks, writeTasks } from '@/lib/dataStore'
+import { supabase } from '@/lib/supabase'
+import { toTask } from '@/lib/dataStore'
 import type { Task } from '@/lib/types'
 
 export async function GET() {
-  const tasks = await readTasks()
-  return NextResponse.json(tasks)
+  const { data } = await supabase.from('tasks').select('*').order('order')
+  return NextResponse.json((data ?? []).map(toTask))
 }
 
-// 여러 task를 한 번에 원자적으로 저장 (드래그 후 순서/컬럼 저장용)
 export async function PATCH(request: Request) {
   const updates = await request.json() as Partial<Task>[]
-  const tasks = await readTasks()
 
-  for (const update of updates) {
-    const index = tasks.findIndex((t) => t.id === update.id)
-    if (index !== -1) tasks[index] = { ...tasks[index], ...update }
-  }
+  await Promise.all(updates.map((u) => {
+    const patch: Record<string, unknown> = {}
+    if (u.columnId !== undefined) patch.column_id = u.columnId
+    if (u.order !== undefined) patch.order = u.order
+    if ('completedAt' in u) patch.completed_at = u.completedAt ?? null
+    return supabase.from('tasks').update(patch).eq('id', u.id!)
+  }))
 
-  await writeTasks(tasks)
-  return NextResponse.json(tasks)
+  const { data } = await supabase.from('tasks').select('*').order('order')
+  return NextResponse.json((data ?? []).map(toTask))
 }
 
 export async function POST(request: Request) {
   const body = await request.json()
-  const tasks = await readTasks()
 
-  const newTask = {
+  const { data: colTasks } = await supabase
+    .from('tasks').select('id').eq('column_id', body.columnId)
+  const order = typeof body.order === 'number' ? body.order : (colTasks?.length ?? 0)
+
+  const row = {
     id: randomUUID(),
     title: String(body.title ?? ''),
     memo: String(body.memo ?? ''),
-    dueDate: body.dueDate ?? null,
-    columnId: String(body.columnId),
-    createdAt: new Date().toISOString(),
-    completedAt: null,
-    order: typeof body.order === 'number' ? body.order : tasks.length,
+    due_date: body.dueDate ?? null,
+    column_id: String(body.columnId),
+    created_at: new Date().toISOString(),
+    completed_at: null,
+    order,
   }
 
-  tasks.push(newTask)
-  await writeTasks(tasks)
-  return NextResponse.json(newTask, { status: 201 })
+  const { data } = await supabase.from('tasks').insert(row).select().single()
+  return NextResponse.json(toTask(data), { status: 201 })
 }

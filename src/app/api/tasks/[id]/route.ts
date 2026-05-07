@@ -1,28 +1,29 @@
-// PUT    /api/tasks/[id] — 업무 수정 (제목, 메모, 마감일 등)
+// PUT    /api/tasks/[id] — 업무 수정
 // DELETE /api/tasks/[id] — 업무 삭제
 import { NextResponse } from 'next/server'
-import { readTasks, writeTasks } from '@/lib/dataStore'
+import { supabase } from '@/lib/supabase'
+import { toTask } from '@/lib/dataStore'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function PUT(request: Request, { params }: Params) {
   const { id } = await params
   const body = await request.json()
-  const tasks = await readTasks()
-  const index = tasks.findIndex((t) => t.id === id)
 
-  if (index === -1) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  }
+  const patch: Record<string, unknown> = {}
+  if (body.title !== undefined) patch.title = body.title
+  if (body.memo !== undefined) patch.memo = body.memo
+  if ('dueDate' in body) patch.due_date = body.dueDate ?? null
+  if (body.columnId !== undefined) patch.column_id = body.columnId
+  if ('completedAt' in body) patch.completed_at = body.completedAt ?? null
 
-  tasks[index] = { ...tasks[index], ...body }
-  await writeTasks(tasks)
-  return NextResponse.json(tasks[index])
+  const { data, error } = await supabase.from('tasks').update(patch).eq('id', id).select().single()
+  if (error) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  return NextResponse.json(toTask(data))
 }
 
 export async function DELETE(_request: Request, { params }: Params) {
   const { id } = await params
-  const tasks = await readTasks()
-  await writeTasks(tasks.filter((t) => t.id !== id))
+  await supabase.from('tasks').delete().eq('id', id)
   return new NextResponse(null, { status: 204 })
 }

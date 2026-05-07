@@ -1,28 +1,27 @@
-// PUT    /api/columns/[id] — 컬럼 수정 (이름, isCompletedColumn 등)
+// PUT    /api/columns/[id] — 컬럼 수정
 // DELETE /api/columns/[id] — 컬럼 삭제
 import { NextResponse } from 'next/server'
-import { readColumns, writeColumns } from '@/lib/dataStore'
+import { supabase } from '@/lib/supabase'
+import { toColumn } from '@/lib/dataStore'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function PUT(request: Request, { params }: Params) {
   const { id } = await params
   const body = await request.json()
-  const columns = await readColumns()
-  const index = columns.findIndex((c) => c.id === id)
 
-  if (index === -1) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  }
+  const patch: Record<string, unknown> = {}
+  if (body.name !== undefined) patch.name = body.name
+  if (body.order !== undefined) patch.order = body.order
+  if (body.isCompletedColumn !== undefined) patch.is_completed_column = body.isCompletedColumn
 
-  columns[index] = { ...columns[index], ...body }
-  await writeColumns(columns)
-  return NextResponse.json(columns[index])
+  const { data, error } = await supabase.from('columns').update(patch).eq('id', id).select().single()
+  if (error) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  return NextResponse.json(toColumn(data))
 }
 
 export async function DELETE(_request: Request, { params }: Params) {
   const { id } = await params
-  const columns = await readColumns()
-  await writeColumns(columns.filter((c) => c.id !== id))
+  await supabase.from('columns').delete().eq('id', id)
   return new NextResponse(null, { status: 204 })
 }
