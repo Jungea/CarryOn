@@ -31,6 +31,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   const [columns, setColumns] = useState<Column[]>([...initialColumns].sort((a, b) => a.order - b.order))
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
+  const [activeColumn, setActiveColumn] = useState<Column | null>(null)
   const [showTodayPanel, setShowTodayPanel] = useState(false)
   const [today, setToday] = useState('')
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -136,6 +137,8 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
 
   // 드래그 시작: DragOverlay에 표시할 카드 기억
   function handleDragStart({ active }: DragStartEvent) {
+    const col = columns.find((c) => c.id === active.id)
+    if (col) { setActiveColumn(col); return }
     const task = tasks.find((t) => t.id === active.id)
     if (task) setActiveTask(task)
   }
@@ -143,13 +146,20 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   // 드래그 종료: 컬럼/카드 순서 재계산 후 API에 저장
   async function handleDragEnd({ active, over }: DragEndEvent) {
     setActiveTask(null)
+    setActiveColumn(null)
     if (!over || active.id === over.id) return
 
     // 컬럼 재정렬
     const activeColIndex = columns.findIndex((c) => c.id === active.id)
     if (activeColIndex !== -1) {
-      const overColIndex = columns.findIndex((c) => c.id === over.id)
-      if (overColIndex === -1) return
+      let overColIndex = columns.findIndex((c) => c.id === over.id)
+      if (overColIndex === -1) {
+        // over가 카드 ID인 경우 해당 카드의 컬럼을 대상으로 사용
+        const overTask = tasks.find((t) => t.id === over.id)
+        if (!overTask) return
+        overColIndex = columns.findIndex((c) => c.id === overTask.columnId)
+        if (overColIndex === -1) return
+      }
       const reordered = arrayMove(columns, activeColIndex, overColIndex).map((c, i) => ({
         ...c,
         order: i,
@@ -352,11 +362,33 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
         </SortableContext>
 
         <DragOverlay>
-          {activeTask && (
+          {activeColumn ? (
+            <div className="w-72 bg-gray-50 rounded-xl flex flex-col shadow-2xl rotate-1 opacity-95 max-h-[60vh] overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-200">
+                <span className="text-sm font-semibold text-gray-700">
+                  {activeColumn.name}
+                  <span className="ml-2 text-xs font-normal text-gray-400">
+                    {tasks.filter((t) => t.columnId === activeColumn.id).length}
+                  </span>
+                </span>
+              </div>
+              <div className="px-3 py-3 flex flex-col gap-2">
+                {tasks
+                  .filter((t) => t.columnId === activeColumn.id)
+                  .sort((a, b) => a.order - b.order)
+                  .slice(0, 6)
+                  .map((task) => (
+                    <div key={task.id} className="bg-white rounded-lg border border-gray-200 p-3">
+                      <p className="text-sm font-medium text-gray-800 truncate">{task.title}</p>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          ) : activeTask ? (
             <div className="rotate-2 shadow-xl">
               <TaskCard task={activeTask} onEdit={() => {}} />
             </div>
-          )}
+          ) : null}
         </DragOverlay>
       </DndContext>
 
