@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 
 export const metadata: Metadata = {
   title: 'CarryOn',
@@ -11,12 +12,18 @@ export const metadata: Metadata = {
     icon: '/icon.svg',
     apple: '/icon.png',
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'CarryOn',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
       <body className="bg-gray-100 min-h-screen flex flex-col">
+        <ServiceWorkerRegister />
         <TopNav />
 
         {/* Main content */}
