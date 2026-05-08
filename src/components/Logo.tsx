@@ -46,7 +46,7 @@ export default function Logo({ size = 28, white = false }: LogoProps) {
         d={`M${fs * 2.78 + box * 0.22} ${size / 2} L${fs * 2.78 + box * 0.45} ${(size - box) / 2 + box * 0.72} L${fs * 2.78 + box * 0.78} ${(size - box) / 2 + box * 0.28}`}
         fill="none"
         stroke={checkStroke}
-        strokeWidth={box * 0.1}
+        strokeWidth={box * 0.2}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
