@@ -20,12 +20,61 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
 모든 테이블에 RLS 적용됨. 각 테이블의 Policy:
 - `tasks`, `columns`, `calendar_events` 모두 `auth.uid() = user_id` 조건으로 본인 데이터만 접근 가능
 
-### 테이블 구조
-| 테이블 | 주요 컬럼 |
-|---|---|
-| tasks | id, title, memo, column_id, due_date, created_at, completed_at, order, user_id |
-| columns | id, name, order, is_completed_column, user_id |
-| calendar_events | id, date, type, name, user_id |
+### 테이블 생성 SQL
+
+SQL Editor에서 실행:
+
+```sql
+-- tasks
+create table tasks (
+  id uuid primary key,
+  user_id uuid references auth.users not null,
+  title text not null default '',
+  memo text not null default '',
+  column_id uuid not null,
+  "order" int not null default 0,
+  due_date date,
+  created_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+
+-- columns
+create table columns (
+  id uuid primary key,
+  user_id uuid references auth.users not null,
+  name text not null,
+  "order" int not null default 0,
+  is_completed_column boolean not null default false,
+  filter_type text,
+  filter_days int
+);
+
+-- calendar_events
+create table calendar_events (
+  id uuid primary key,
+  user_id uuid references auth.users not null,
+  date date not null,
+  type text not null,
+  name text,
+  created_at timestamptz not null default now()
+);
+```
+
+### RLS 정책 SQL
+
+```sql
+alter table tasks enable row level security;
+create policy "tasks: 본인 데이터만" on tasks for all
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+alter table columns enable row level security;
+create policy "columns: 본인 데이터만" on columns for all
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+alter table calendar_events enable row level security;
+create policy "calendar_events: 본인 데이터만" on calendar_events for all
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
 
 ---
 
@@ -68,6 +117,18 @@ javascript:(function(){var s=Object.getOwnPropertyDescriptor(HTMLInputElement.pr
 2. 원하는 계정 북마크 클릭 → 자동 입력 후 로그인
 
 > 비밀번호는 브라우저 북마크 매니저에만 저장되며 URL이나 서버 로그에 남지 않습니다.
+
+---
+
+## 계정/프로젝트 전환 시 체크리스트
+
+- [ ] Supabase 새 프로젝트 생성
+- [ ] 테이블 생성 SQL + RLS SQL 실행
+- [ ] 인증 설정 (Email 활성화)
+- [ ] `.env.local` URL·Key 교체
+- [ ] Vercel 환경변수 교체 → Redeploy
+- [ ] Supabase Authentication → URL Configuration에 도메인 등록
+- [ ] 회원가입 후 기본 컬럼 4개 자동 생성 확인
 
 ---
 
