@@ -113,7 +113,7 @@ function QuickAddTask({ dateStr, columns, onAdd }: {
   columns: Column[]
   onAdd: (title: string, columnId: string, dueDate: string) => Promise<void>
 }) {
-  const nonCompleted = columns.filter((c) => !c.isCompletedColumn).sort((a, b) => a.order - b.order)
+  const nonCompleted = columns.filter((c) => !c.isCompletedColumn && !c.filterType).sort((a, b) => a.order - b.order)
   const [title, setTitle] = useState('')
   const [columnId, setColumnId] = useState(nonCompleted[0]?.id ?? '')
   const [saving, setSaving] = useState(false)

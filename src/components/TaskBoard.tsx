@@ -49,12 +49,12 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   // 컬럼에 새 업무 추가 (order는 현재 컬럼 마지막 순서)
   async function handleAddTask(columnId: string, title: string) {
     const colTasks = tasks.filter((t) => t.columnId === columnId)
-    const newTask = await store.createTask({
-      title,
-      columnId,
-      order: colTasks.length,
-    })
-    setTasks((prev) => [newTask, ...prev])
+    const shifted = colTasks.map((t) => ({ ...t, order: t.order + 1 }))
+    const newTask = await store.createTask({ title, columnId, order: 0 })
+    setTasks((prev) => [newTask, ...prev.filter((t) => t.columnId !== columnId), ...shifted])
+    if (shifted.length > 0) {
+      await store.batchUpdateTasks(shifted.map((t) => ({ id: t.id, columnId: t.columnId, order: t.order, completedAt: t.completedAt })))
+    }
   }
 
   // 업무 수정 (제목, 메모, 마감일 등 부분 업데이트)
@@ -232,7 +232,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   async function handleMoveToNextColumn(taskId: string) {
     const task = tasks.find((t) => t.id === taskId)
     if (!task) return
-    const sorted = [...columns].sort((a, b) => a.order - b.order)
+    const sorted = [...columns].filter((c) => !c.filterType).sort((a, b) => a.order - b.order)
     const colIndex = sorted.findIndex((c) => c.id === task.columnId)
     if (colIndex === -1 || colIndex >= sorted.length - 1) return
     const nextCol = sorted[colIndex + 1]

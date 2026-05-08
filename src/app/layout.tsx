@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className="bg-gray-100 h-dvh flex flex-col overflow-hidden">
+      <body className="bg-gray-100 h-dvh flex flex-col overflow-hidden" suppressHydrationWarning>
         <ServiceWorkerRegister />
         <TopNav />
 

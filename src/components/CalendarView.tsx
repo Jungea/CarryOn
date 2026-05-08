@@ -2,7 +2,7 @@
 // 이전/다음 달 이동 가능
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getCalendarDays, getTasksForDate, toDateString, type CalendarDay } from '@/lib/calendarUtils'
 import { getHolidayName } from '@/lib/holidays'
 import type { Task, CalendarEvent } from '@/lib/types'
@@ -23,9 +23,8 @@ interface CalendarViewProps {
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
 export default function CalendarView({ tasks, events, onDayClick, selectedDate, onSettingsClick, searchQuery = '', year: yearProp, month: monthProp, onYearMonthChange }: CalendarViewProps) {
-  const today = new Date()
-  const [yearLocal, setYearLocal] = useState(today.getFullYear())
-  const [monthLocal, setMonthLocal] = useState(today.getMonth())
+  const [yearLocal, setYearLocal] = useState(() => new Date().getFullYear())
+  const [monthLocal, setMonthLocal] = useState(() => new Date().getMonth())
 
   const year = yearProp ?? yearLocal
   const month = monthProp ?? monthLocal
@@ -34,7 +33,8 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
   function setMonth(m: number) { onYearMonthChange ? onYearMonthChange(year, m) : setMonthLocal(m) }
 
   const days = getCalendarDays(year, month)
-  const todayStr = toDateString(today.toISOString())
+  const [todayStr, setTodayStr] = useState('')
+  useEffect(() => { setTodayStr(toDateString(new Date().toISOString())) }, [])
 
   const q = searchQuery.trim().toLowerCase()
   const matchedTasks = q

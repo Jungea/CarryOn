@@ -111,7 +111,7 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
             value={columnId}
             onChange={(e) => setColumnId(e.target.value)}
           >
-            {[...columns].sort((a, b) => a.order - b.order).map((col) => (
+            {[...columns].filter((c) => !c.filterType).sort((a, b) => a.order - b.order).map((col) => (
               <option key={col.id} value={col.id}>{col.name}</option>
             ))}
           </select>

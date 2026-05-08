@@ -19,8 +19,14 @@ export default function TopNav() {
   const [showPanel, setShowPanel] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [showSettings, setShowSettings] = useState(false)
-  const today = new Date().toISOString().slice(0, 10)
-  const todayLabel = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })
+  const [today, setToday] = useState('')
+  const [todayLabel, setTodayLabel] = useState('')
+
+  useEffect(() => {
+    const now = new Date()
+    setToday(now.toISOString().slice(0, 10))
+    setTodayLabel(now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }))
+  }, [])
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient()
@@ -63,8 +69,8 @@ export default function TopNav() {
 
       <header className="hidden md:flex items-center gap-6 px-6 py-3 bg-white border-b border-gray-200 shadow-sm">
         <Link href="/"><Logo size={28} /></Link>
-        <Link href="/" className="text-sm text-gray-600 hover:text-slate-700 transition-colors">업무</Link>
-        <Link href="/calendar" className="text-sm text-gray-600 hover:text-slate-700 transition-colors">캘린더</Link>
+        <Link href="/" className={`text-sm transition-colors ${pathname === '/' ? 'text-slate-800 font-semibold' : 'text-gray-400 hover:text-slate-700'}`}>업무</Link>
+        <Link href="/calendar" className={`text-sm transition-colors ${pathname === '/calendar' ? 'text-slate-800 font-semibold' : 'text-gray-400 hover:text-slate-700'}`}>캘린더</Link>
         <div className="ml-auto flex items-center gap-4 text-xs text-gray-400">
           {todayDueTasks.length > 0 && (
             <button

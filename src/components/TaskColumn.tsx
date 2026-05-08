@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import TaskCard from './TaskCard'
+import TaskCard, { StaticTaskCard } from './TaskCard'
 import type { Column, Task } from '@/lib/types'
 import { Pencil, Trash2, Filter } from 'lucide-react'
 
@@ -107,6 +107,7 @@ export default function TaskColumn({
       {/* Column Header */}
       <div
         className="flex items-center justify-between px-4 py-3 cursor-grab active:cursor-grabbing"
+        suppressHydrationWarning
         {...attributes}
         {...listeners}
       >
@@ -173,24 +174,36 @@ export default function TaskColumn({
           </form>
         )}
 
-        <SortableContext items={sortedTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-          {visibleTasks.map((task) => (
-            <TaskCard
+        {column.filterType ? (
+          visibleTasks.map((task) => (
+            <StaticTaskCard
               key={task.id}
               task={task}
               onEdit={onEditTask}
               onComplete={onComplete}
               onMoveNext={onMoveNext ? () => onMoveNext(task.id) : undefined}
-              columnLabel={column.filterType ? allColumns.find((c) => c.id === task.columnId)?.name : undefined}
+              columnLabel={allColumns.find((c) => c.id === task.columnId)?.name}
             />
-          ))}
-        </SortableContext>
+          ))
+        ) : (
+          <SortableContext items={sortedTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+            {visibleTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onEdit={onEditTask}
+                onComplete={onComplete}
+                onMoveNext={onMoveNext ? () => onMoveNext(task.id) : undefined}
+              />
+            ))}
+          </SortableContext>
+        )}
         {hiddenCount > 0 && (
           <p className="text-xs text-gray-400 text-center py-1">{hiddenCount}개 숨겨짐 · 검색으로 찾기</p>
         )}
 
-        {/* 드래그 중일 때 하단 드롭 영역 표시 */}
-        {isCardDragging && (
+        {/* 드래그 중일 때 하단 드롭 영역 표시 (필터 컬럼 제외) */}
+        {isCardDragging && !column.filterType && (
           <div className="h-16 rounded-lg border-2 border-dashed border-gray-200 transition-all" />
         )}
       </div>
