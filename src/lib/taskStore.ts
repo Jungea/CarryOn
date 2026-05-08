@@ -55,7 +55,7 @@ export async function getColumns(): Promise<Column[]> {
 }
 
 export async function createColumn(
-  data: Pick<Column, 'name' | 'order' | 'isCompletedColumn'>
+  data: Pick<Column, 'name' | 'order' | 'isCompletedColumn'> & { filterType?: Column['filterType']; filterDays?: Column['filterDays'] }
 ): Promise<Column> {
   const res = await fetch('/api/columns', {
     method: 'POST',

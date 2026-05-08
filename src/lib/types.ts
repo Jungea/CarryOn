@@ -10,11 +10,15 @@ export interface Task {
   order: number                // 컬럼 내 정렬 순서 (낮을수록 위)
 }
 
+export type FilterType = 'dueDate' | 'createdAt' | 'completedAt'
+
 export interface Column {
   id: string
   name: string
   order: number                // 보드에서 좌→우 순서
   isCompletedColumn: boolean   // true이면 이 컬럼으로 이동 시 completedAt 기록
+  filterType?: FilterType | null
+  filterDays?: number | null
 }
 
 export type LeaveType = '연차' | '오전반차' | '오후반차' | '오전반반차' | '오후반반차'

@@ -3,11 +3,11 @@
 import { createSupabaseServerClient } from './supabase-server'
 import type { Task, Column, CalendarEvent } from './types'
 
-const DEFAULT_COLUMNS: Column[] = [
-  { id: 'col-1', name: '미분류', order: 0, isCompletedColumn: false },
-  { id: 'col-2', name: '금일작업필수', order: 1, isCompletedColumn: false },
-  { id: 'col-3', name: '진행중', order: 2, isCompletedColumn: false },
-  { id: 'col-4', name: '완료', order: 3, isCompletedColumn: true },
+export const DEFAULT_COLUMN_ROWS = [
+  { name: '할 일', order: 0, is_completed_column: false, filter_type: null, filter_days: null },
+  { name: '오늘 마감', order: 1, is_completed_column: false, filter_type: 'dueDate', filter_days: 1 },
+  { name: '진행 중', order: 2, is_completed_column: false, filter_type: null, filter_days: null },
+  { name: '최근 완료', order: 3, is_completed_column: false, filter_type: 'completedAt', filter_days: 7 },
 ]
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,6 +31,8 @@ export function toColumn(row: any): Column {
     name: row.name,
     order: row.order,
     isCompletedColumn: row.is_completed_column,
+    filterType: row.filter_type ?? null,
+    filterDays: row.filter_days ?? null,
   }
 }
 
@@ -64,17 +66,13 @@ export async function readColumns(): Promise<Column[]> {
   if (!data || data.length === 0) {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      await supabase.from('columns').insert(DEFAULT_COLUMNS.map((c) => ({
-        id: crypto.randomUUID(),
-        name: c.name,
-        order: c.order,
-        is_completed_column: c.isCompletedColumn,
-        user_id: user.id,
-      })))
+      await supabase.from('columns').insert(
+        DEFAULT_COLUMN_ROWS.map((c) => ({ ...c, id: crypto.randomUUID(), user_id: user.id }))
+      )
       const { data: fresh } = await supabase.from('columns').select('*').order('order')
       return (fresh ?? []).map(toColumn)
     }
-    return DEFAULT_COLUMNS
+    return []
   }
   return data.map(toColumn)
 }

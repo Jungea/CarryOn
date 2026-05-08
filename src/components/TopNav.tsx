@@ -4,12 +4,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
-import LogoutButton from './LogoutButton'
 import Logo from './Logo'
+import SettingsModal from './SettingsModal'
 import TaskDetailModal from './TaskDetailModal'
 import { getTasks, getColumns, updateTask, deleteTask } from '@/lib/taskStore'
 import type { Task, Column } from '@/lib/types'
-import { X } from 'lucide-react'
+import { X, Settings } from 'lucide-react'
 
 export default function TopNav() {
   const pathname = usePathname()
@@ -18,6 +18,7 @@ export default function TopNav() {
   const [columns, setColumns] = useState<Column[]>([])
   const [showPanel, setShowPanel] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [showSettings, setShowSettings] = useState(false)
   const today = new Date().toISOString().slice(0, 10)
   const todayLabel = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })
 
@@ -65,8 +66,6 @@ export default function TopNav() {
         <Link href="/" className="text-sm text-gray-600 hover:text-slate-700 transition-colors">업무</Link>
         <Link href="/calendar" className="text-sm text-gray-600 hover:text-slate-700 transition-colors">캘린더</Link>
         <div className="ml-auto flex items-center gap-4 text-xs text-gray-400">
-          <span>{todayLabel}</span>
-          {email && <span>{email}</span>}
           {todayDueTasks.length > 0 && (
             <button
               onClick={() => setShowPanel(true)}
@@ -75,7 +74,11 @@ export default function TopNav() {
               오늘 마감 <span className="font-bold">{todayDueTasks.length}</span>
             </button>
           )}
-          <LogoutButton />
+          <span>{todayLabel}</span>
+          {email && <span>{email}</span>}
+          <button onClick={() => setShowSettings(true)} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <Settings size={16} />
+          </button>
         </div>
       </header>
 
@@ -116,6 +119,8 @@ export default function TopNav() {
           </div>
         </div>
       )}
+
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
       <TaskDetailModal
         task={editingTask}

@@ -4,14 +4,8 @@
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { toColumn } from '@/lib/dataStore'
+import { toColumn, DEFAULT_COLUMN_ROWS } from '@/lib/dataStore'
 import type { Column } from '@/lib/types'
-
-const DEFAULT_COLUMNS = [
-  { name: '할 일', order: 0, is_completed_column: false },
-  { name: '진행 중', order: 1, is_completed_column: false },
-  { name: '완료', order: 2, is_completed_column: true },
-]
 
 export async function GET() {
   const supabase = await createSupabaseServerClient()
@@ -21,7 +15,7 @@ export async function GET() {
   const { data: existing } = await supabase.from('columns').select('*').order('order')
 
   if (!existing || existing.length === 0) {
-    const rows = DEFAULT_COLUMNS.map((c) => ({ ...c, id: randomUUID(), user_id: user.id }))
+    const rows = DEFAULT_COLUMN_ROWS.map((c) => ({ ...c, id: randomUUID(), user_id: user.id }))
     await supabase.from('columns').insert(rows)
     const { data: seeded } = await supabase.from('columns').select('*').order('order')
     return NextResponse.json((seeded ?? []).map(toColumn))
@@ -60,6 +54,8 @@ export async function POST(request: Request) {
     name: String(body.name ?? '새 컬럼'),
     order,
     is_completed_column: Boolean(body.isCompletedColumn ?? false),
+    filter_type: body.filterType ?? null,
+    filter_days: body.filterDays ?? null,
     user_id: user.id,
   }
 

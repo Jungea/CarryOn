@@ -18,7 +18,8 @@ import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-
 import TaskColumn from './TaskColumn'
 import TaskCard from './TaskCard'
 import TaskDetailModal from './TaskDetailModal'
-import type { Column, Task } from '@/lib/types'
+import FilterColumnModal from './FilterColumnModal'
+import type { Column, Task, FilterType } from '@/lib/types'
 import * as store from '@/lib/taskStore'
 import { Search, X } from 'lucide-react'
 
@@ -35,6 +36,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
   const [activeColumn, setActiveColumn] = useState<Column | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
+  const [filterModalOpen, setFilterModalOpen] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const sensors = useSensors(
@@ -80,18 +82,43 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
     setColumns((prev) => [...prev, newCol])
   }
 
-  // 완료 컬럼 지정/해제 + 해당 컬럼 카드들 completedAt 일괄 갱신
+  async function handleAddFilterColumn(name: string, filterType: FilterType, filterDays: number) {
+    const newCol = await store.createColumn({
+      name,
+      order: columns.length,
+      isCompletedColumn: false,
+      filterType,
+      filterDays,
+    })
+    setColumns((prev) => [...prev, newCol])
+  }
+
+  function getFilterTasks(column: Column): Task[] {
+    if (!column.filterType || !column.filterDays) return []
+    const today = new Date()
+    today.setHours(23, 59, 59, 999)
+    const from = new Date()
+    from.setDate(from.getDate() - (column.filterDays - 1))
+    from.setHours(0, 0, 0, 0)
+    return tasks.filter((t) => {
+      const raw = column.filterType === 'dueDate' ? t.dueDate
+        : column.filterType === 'completedAt' ? t.completedAt
+        : t.createdAt
+      if (!raw) return false
+      const d = new Date(raw)
+      return d >= from && d <= today
+    })
+  }
+
+  async function handleCompleteTask(task: Task) {
+    const completedAt = task.completedAt ? null : new Date().toISOString()
+    setTasks((prev) => prev.map((t) => t.id === task.id ? { ...t, completedAt } : t))
+    store.updateTask(task.id, { completedAt })
+  }
+
   async function handleToggleCompletedColumn(id: string, value: boolean) {
     const updated = await store.updateColumn(id, { isCompletedColumn: value })
     setColumns((prev) => prev.map((c) => (c.id === id ? updated : c)))
-
-    const colTasks = tasks.filter((t) => t.columnId === id)
-    if (colTasks.length === 0) return
-
-    const completedAt = value ? new Date().toISOString() : null
-    const patches = colTasks.map((t) => ({ id: t.id, completedAt }))
-    await store.batchUpdateTasks(patches)
-    setTasks((prev) => prev.map((t) => t.columnId === id ? { ...t, completedAt } : t))
   }
 
   // 컬럼 이름 변경
@@ -152,13 +179,10 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
     const overTask = tasks.find((t) => t.id === over.id)
     const targetColumnId = overTask?.columnId ?? columns.find((c) => c.id === over.id)?.id
     if (!targetColumnId) return
+    const targetColumn = columns.find((c) => c.id === targetColumnId)
+    if (targetColumn?.filterType) return // 필터 컬럼으로 드롭 불가
 
-    const isCompletedColumn = columns.find((c) => c.id === targetColumnId)?.isCompletedColumn ?? false
-    const newCompletedAt = isCompletedColumn && !draggedTask.completedAt
-      ? new Date().toISOString()
-      : !isCompletedColumn && draggedTask.completedAt
-      ? null
-      : draggedTask.completedAt
+    const newCompletedAt = draggedTask.completedAt
 
     const others = tasks.filter((t) => t.columnId !== targetColumnId)
 
@@ -213,13 +237,8 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
     if (colIndex === -1 || colIndex >= sorted.length - 1) return
     const nextCol = sorted[colIndex + 1]
     const nextColTasks = tasks.filter((t) => t.columnId === nextCol.id)
-    const completedAt = nextCol.isCompletedColumn && !task.completedAt
-      ? new Date().toISOString()
-      : !nextCol.isCompletedColumn && task.completedAt
-      ? null
-      : task.completedAt
-    await store.batchUpdateTasks([{ id: task.id, columnId: nextCol.id, order: nextColTasks.length, completedAt }])
-    setTasks((prev) => prev.map((t) => t.id === taskId ? { ...t, columnId: nextCol.id, order: nextColTasks.length, completedAt } : t))
+    await store.batchUpdateTasks([{ id: task.id, columnId: nextCol.id, order: nextColTasks.length, completedAt: task.completedAt }])
+    setTasks((prev) => prev.map((t) => t.id === taskId ? { ...t, columnId: nextCol.id, order: nextColTasks.length } : t))
   }
 
   const sortedColumns = [...columns].sort((a, b) => a.order - b.order)
@@ -273,25 +292,34 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
               <TaskColumn
                 key={column.id}
                 column={column}
-                tasks={tasks.filter((t) => t.columnId === column.id)}
+                tasks={column.filterType ? getFilterTasks(column) : tasks.filter((t) => t.columnId === column.id && (!t.completedAt || !!searchQuery))}
+                allColumns={columns}
                 isCardDragging={!!activeTask && activeTask.columnId !== column.id}
                 searchQuery={searchQuery}
                 onAddTask={handleAddTask}
                 onEditTask={setEditingTask}
+                onComplete={handleCompleteTask}
                 onRenameColumn={handleRenameColumn}
                 onDeleteColumn={handleDeleteColumn}
-                onToggleCompleted={handleToggleCompletedColumn}
                 onMoveNext={colIdx < sortedColumns.length - 1 ? handleMoveToNextColumn : undefined}
               />
             ))}
 
-            {/* Add Column Button */}
-            <button
-              onClick={handleAddColumn}
-              className="flex-shrink-0 w-72 h-12 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-slate-500 hover:text-slate-500 transition-colors text-sm"
-            >
-              + 컬럼 추가
-            </button>
+            {/* Add Column Buttons */}
+            <div className="flex-shrink-0 flex flex-col gap-2">
+              <button
+                onClick={handleAddColumn}
+                className="w-72 h-12 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-slate-500 hover:text-slate-500 transition-colors text-sm"
+              >
+                + 컬럼 추가
+              </button>
+              <button
+                onClick={() => setFilterModalOpen(true)}
+                className="w-72 h-12 rounded-xl border-2 border-dashed border-blue-200 text-blue-400 hover:border-blue-400 hover:text-blue-500 transition-colors text-sm"
+              >
+                + 필터 컬럼 추가
+              </button>
+            </div>
           </div>
         </SortableContext>
 
@@ -326,6 +354,13 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
         </DragOverlay>
       </DndContext>
 
+
+      {filterModalOpen && (
+        <FilterColumnModal
+          onClose={() => setFilterModalOpen(false)}
+          onCreate={handleAddFilterColumn}
+        />
+      )}
 
       {/* Detail Modal */}
       <TaskDetailModal

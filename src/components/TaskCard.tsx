@@ -6,15 +6,17 @@ import { useState, useEffect } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Task } from '@/lib/types'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Check } from 'lucide-react'
 
 interface TaskCardProps {
   task: Task
   onEdit: (task: Task) => void
+  onComplete?: (task: Task) => void
   onMoveNext?: () => void
+  columnLabel?: string
 }
 
-export default function TaskCard({ task, onEdit, onMoveNext }: TaskCardProps) {
+export default function TaskCard({ task, onEdit, onComplete, onMoveNext, columnLabel }: TaskCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: task.id })
 
@@ -60,7 +62,23 @@ export default function TaskCard({ task, onEdit, onMoveNext }: TaskCardProps) {
         <div className="w-8 h-1 rounded-full bg-gray-200" />
       </div>
 
-      <div className="px-3 pb-3">
+      <div className="px-3 pb-3 flex gap-2">
+        {onComplete && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onComplete(task) }}
+            className={`mt-0.5 flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+              task.completedAt
+                ? 'bg-green-500 border-green-500 text-white'
+                : 'border-gray-300 hover:border-green-400'
+            }`}
+          >
+            {task.completedAt && <Check size={10} strokeWidth={3} />}
+          </button>
+        )}
+        <div className="flex-1 min-w-0">
+        {columnLabel && (
+          <span className="inline-block mb-1 text-xs text-blue-500 bg-blue-100 rounded-full px-2 py-0.5">{columnLabel}</span>
+        )}
         <p className="text-sm font-medium text-gray-800 leading-snug">
           {task.title}
           {task.memo && <span className="ml-1.5 text-xs text-gray-400 font-normal">≡</span>}
@@ -93,6 +111,7 @@ export default function TaskCard({ task, onEdit, onMoveNext }: TaskCardProps) {
               <ChevronRight size={14} />
             </button>
           )}
+        </div>
         </div>
       </div>
     </div>

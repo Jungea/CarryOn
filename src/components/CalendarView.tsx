@@ -3,7 +3,7 @@
 'use client'
 
 import { useState } from 'react'
-import { getCalendarDays, getTasksForDate, toDateString } from '@/lib/calendarUtils'
+import { getCalendarDays, getTasksForDate, toDateString, type CalendarDay } from '@/lib/calendarUtils'
 import { getHolidayName } from '@/lib/holidays'
 import type { Task, CalendarEvent } from '@/lib/types'
 import { ChevronLeft, ChevronRight, Settings } from 'lucide-react'
@@ -77,9 +77,7 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
 
       {/* Day cells */}
       <div className="grid grid-cols-7 gap-1">
-        {days.map((date, i) => {
-          if (!date) return <div key={`null-${i}`} />
-
+        {days.map(({ date, currentMonth }: CalendarDay) => {
           const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
           const { created, completed, passing } = getTasksForDate(tasks, dateStr)
           const isToday = dateStr === todayStr
@@ -87,7 +85,7 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
           const isSunday = date.getDay() === 0
           const isSaturday = date.getDay() === 6
           const isMatched = q ? matchedDates.has(dateStr) : false
-          const isDimmed = q && !isMatched
+          const isDimmed = (q && !isMatched) || !currentMonth
           const matchedTasksForDate = isMatched
             ? matchedTasks.filter((t) => (t.dueDate ?? t.createdAt.slice(0, 10)) === dateStr)
             : []
@@ -102,10 +100,20 @@ export default function CalendarView({ tasks, events, onDayClick, selectedDate, 
 
           const MAX = 3 // 카테고리별 표시 개수
 
+          function handleClick() {
+            if (!currentMonth) {
+              const y = date.getFullYear()
+              const m = date.getMonth()
+              onYearMonthChange ? onYearMonthChange(y, m) : (m < month ? prevMonth() : nextMonth())
+            } else {
+              onDayClick(dateStr)
+            }
+          }
+
           return (
             <button
               key={dateStr}
-              onClick={() => onDayClick(dateStr)}
+              onClick={handleClick}
               className={`
                 flex flex-col items-start p-1.5 rounded-lg min-h-20 sm:min-h-32 transition-colors w-full
                 ${isSelected

@@ -7,31 +7,35 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import TaskCard from './TaskCard'
 import type { Column, Task } from '@/lib/types'
-import { Check, Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Filter } from 'lucide-react'
+
+const FILTER_TYPE_LABELS = { dueDate: '마감일', createdAt: '생성일', completedAt: '완료일' }
 
 interface TaskColumnProps {
   column: Column
   tasks: Task[]
+  allColumns?: Column[]
   isCardDragging: boolean
   searchQuery?: string
   onAddTask: (columnId: string, title: string) => Promise<void>
   onEditTask: (task: Task) => void
+  onComplete?: (task: Task) => void
   onRenameColumn: (id: string, name: string) => Promise<void>
   onDeleteColumn: (id: string) => Promise<void>
-  onToggleCompleted: (id: string, value: boolean) => Promise<void>
   onMoveNext?: (taskId: string) => Promise<void>
 }
 
 export default function TaskColumn({
   column,
   tasks,
+  allColumns = [],
   isCardDragging,
   searchQuery = '',
   onAddTask,
   onEditTask,
+  onComplete,
   onRenameColumn,
   onDeleteColumn,
-  onToggleCompleted,
   onMoveNext,
 }: TaskColumnProps) {
   const [editing, setEditing] = useState(false)
@@ -98,7 +102,7 @@ export default function TaskColumn({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex-shrink-0 w-[calc(100vw-4rem)] sm:w-72 bg-gray-50 rounded-xl flex flex-col max-h-full snap-start"
+      className={`flex-shrink-0 w-[calc(100vw-4rem)] sm:w-72 rounded-xl flex flex-col max-h-full snap-start ${column.filterType ? 'bg-blue-50' : 'bg-gray-50'}`}
     >
       {/* Column Header */}
       <div
@@ -118,27 +122,16 @@ export default function TaskColumn({
           />
         ) : (
           <span
-            className="text-sm font-semibold text-gray-700 flex-1"
+            className="text-sm font-semibold text-gray-700 flex-1 flex items-center gap-1.5"
             onDoubleClick={(e) => { e.stopPropagation(); setEditing(true) }}
           >
+            {column.filterType && <Filter size={12} className="text-blue-400 shrink-0" />}
             {column.name}
-            <span className="ml-2 text-xs font-normal text-gray-400">{tasks.length}</span>
+            <span className="ml-1 text-xs font-normal text-gray-400">{tasks.length}</span>
           </span>
         )}
 
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={() => {
-              const msg = column.isCompletedColumn
-                ? `"${column.name}" 완료 컬럼 지정을 해제할까요? 카드들의 완료일이 초기화됩니다.`
-                : `"${column.name}"을 완료 컬럼으로 지정할까요? 카드들의 완료일이 오늘로 설정됩니다.`
-              if (confirm(msg)) onToggleCompleted(column.id, !column.isCompletedColumn)
-            }}
-            className={`text-xs px-1 transition-colors ${column.isCompletedColumn ? 'text-green-500 hover:text-gray-400' : 'text-gray-400 hover:text-green-500'}`}
-            title={column.isCompletedColumn ? '완료 컬럼 해제' : '완료 컬럼으로 지정'}
-          >
-            <Check size={14} />
-          </button>
           <button
             onClick={() => { setEditing(true); setNameInput(column.name) }}
             className="text-gray-400 hover:text-gray-600 text-xs px-1"
@@ -158,17 +151,27 @@ export default function TaskColumn({
 
       {/* Task List */}
       <div className="flex-1 overflow-y-auto px-3 pb-3 flex flex-col gap-2">
-        {/* Add Task Form */}
-        <form onSubmit={handleAddTask} className="pt-1">
-          <input
-            className="w-full border border-dashed border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 placeholder-gray-300 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 bg-transparent focus:bg-white transition-all disabled:opacity-50"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            placeholder={adding ? '추가 중...' : '+ 업무 추가'}
-            onKeyDown={(e) => { if (e.key === 'Escape') setNewTitle('') }}
-            disabled={adding}
-          />
-        </form>
+        {/* 필터 뱃지 */}
+        {column.filterType && (
+          <div className="pt-1 pb-0.5">
+            <span className="inline-flex items-center gap-1 text-xs text-blue-500 bg-blue-50 border border-blue-100 rounded-full px-2.5 py-1">
+              {FILTER_TYPE_LABELS[column.filterType]} · {column.filterDays === 1 ? '오늘' : `최근 ${column.filterDays}일`}
+            </span>
+          </div>
+        )}
+        {/* Add Task Form (필터 컬럼은 숨김) */}
+        {!column.filterType && (
+          <form onSubmit={handleAddTask} className="pt-1">
+            <input
+              className="w-full border border-dashed border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 placeholder-gray-300 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 bg-transparent focus:bg-white transition-all disabled:opacity-50"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              placeholder={adding ? '추가 중...' : '+ 업무 추가'}
+              onKeyDown={(e) => { if (e.key === 'Escape') setNewTitle('') }}
+              disabled={adding}
+            />
+          </form>
+        )}
 
         <SortableContext items={sortedTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           {visibleTasks.map((task) => (
@@ -176,7 +179,9 @@ export default function TaskColumn({
               key={task.id}
               task={task}
               onEdit={onEditTask}
+              onComplete={onComplete}
               onMoveNext={onMoveNext ? () => onMoveNext(task.id) : undefined}
+              columnLabel={column.filterType ? allColumns.find((c) => c.id === task.columnId)?.name : undefined}
             />
           ))}
         </SortableContext>

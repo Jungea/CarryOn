@@ -15,6 +15,8 @@ export async function PUT(request: Request, { params }: Params) {
   if (body.name !== undefined) patch.name = body.name
   if (body.order !== undefined) patch.order = body.order
   if (body.isCompletedColumn !== undefined) patch.is_completed_column = body.isCompletedColumn
+  if (body.filterType !== undefined) patch.filter_type = body.filterType
+  if (body.filterDays !== undefined) patch.filter_days = body.filterDays
 
   const { data, error } = await supabase.from('columns').update(patch).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: 'Not found' }, { status: 404 })
