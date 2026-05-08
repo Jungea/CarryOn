@@ -96,11 +96,29 @@ Supabase 대시보드 → Authentication → Providers:
 - Site URL: `https://your-domain.com`
 - Redirect URLs에 `https://your-domain.com/**` 추가
 
-## 계정 전환 시 체크리스트
+## 6. Vercel 배포
 
-- [ ] 새 프로젝트 생성
-- [ ] `.env.local` URL·Key 교체
-- [ ] SQL 실행 (테이블 3개)
-- [ ] RLS 정책 설정
-- [ ] 인증 설정 확인
-- [ ] `npm run dev` 후 회원가입 → 기본 컬럼 자동 생성 확인
+1. [vercel.com](https://vercel.com) → New Project → GitHub 레포 연결
+2. Framework Preset: **Next.js** (자동 감지)
+3. Environment Variables 추가:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. Deploy
+
+배포 후 도메인(`https://xxxx.vercel.app`)을 Supabase에 등록:
+- Authentication → URL Configuration → Site URL 업데이트
+- Redirect URLs에 `https://xxxx.vercel.app/**` 추가
+
+커스텀 도메인이 있다면 Vercel → Project → Settings → Domains에서 추가 후 동일하게 Supabase에도 등록.
+
+---
+
+## 계정/프로젝트 전환 시 체크리스트
+
+- [ ] Supabase 새 프로젝트 생성
+- [ ] SQL 실행 (테이블 3개 + RLS)
+- [ ] 인증 설정 (Email 활성화, Confirm email off)
+- [ ] `.env.local` URL·Key 교체 (로컬 개발용)
+- [ ] Vercel 환경변수 교체 → Redeploy
+- [ ] Supabase Redirect URLs에 도메인 등록
+- [ ] 회원가입 후 기본 컬럼 4개 자동 생성 확인
