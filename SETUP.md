@@ -81,10 +81,6 @@ Authentication → Providers → Email:
 - **Enable Email Provider**: ON
 - **Confirm email**: OFF 권장 (가입 즉시 로그인)
 
-Authentication → URL Configuration:
-- **Site URL**: 배포 도메인 (예: `https://carryon.vercel.app`)
-- **Redirect URLs**: `https://your-domain.com/**` 추가
-
 Authentication → Users에서 유저 직접 추가/비밀번호 변경 가능.
 
 ---
@@ -125,7 +121,6 @@ npm run dev
 - [ ] 테이블 생성 SQL 실행
 - [ ] RLS SQL 실행
 - [ ] 인증 설정 (Email ON, Confirm OFF)
-- [ ] Redirect URLs 등록
 - [ ] `.env.local` 작성
 - [ ] Vercel 환경변수 추가 → Redeploy
 - [ ] 회원가입 후 기본 컬럼 4개 확인
