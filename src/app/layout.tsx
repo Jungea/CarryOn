@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import BottomNav from '@/components/BottomNav'
 import TopNav from '@/components/TopNav'
+import MainWrapper from '@/components/MainWrapper'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 
 export const metadata: Metadata = {
@@ -36,14 +37,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className="bg-gray-100 min-h-screen flex flex-col">
+      <body className="bg-gray-100 h-dvh flex flex-col overflow-hidden">
         <ServiceWorkerRegister />
         <TopNav />
 
-        {/* Main content */}
-        <main className="flex-1 flex flex-col pb-16 md:pb-0 overflow-hidden">
+        <MainWrapper>
           {children}
-        </main>
+        </MainWrapper>
 
         <BottomNav />
       </body>

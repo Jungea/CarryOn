@@ -30,26 +30,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* 왼쪽 브랜드 영역 */}
-      <div className="hidden md:flex flex-col justify-between w-1/2 bg-slate-800 p-12">
-        <div className="flex items-center gap-3">
-            <img src="/icon.svg" alt="" className="h-10 w-10" />
-            <span className="text-2xl font-bold text-white tracking-tight">CarryOn</span>
-          </div>
-        <p className="text-slate-400 text-xs">할 일을 끝까지 가져가세요.</p>
+    <div className="flex-1 flex flex-col bg-gray-50 overflow-hidden">
+      <div className="flex-1 flex items-end justify-center pb-8">
+        <img src="/icon.svg" alt="CarryOn" className="w-16 h-16" />
       </div>
 
-      {/* 오른쪽 로그인 폼 */}
-      <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 p-8">
-        <div className="w-full max-w-sm">
-          {/* 모바일 로고 */}
-          <div className="md:hidden mb-10 flex justify-center">
-            <div className="flex items-center gap-2">
-                <img src="/icon.svg" alt="" className="h-9 w-9" />
-                <span className="text-2xl font-bold text-slate-800 tracking-tight">CarryOn</span>
-              </div>
-          </div>
+      <div className="w-full max-w-sm mx-auto px-8">
 
           <h2 className="text-xl font-semibold text-gray-800 mb-1">로그인</h2>
           <p className="text-sm text-gray-400 mb-8">계속하려면 로그인하세요.</p>
@@ -95,7 +81,7 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
-      </div>
+      <div className="flex-1" />
     </div>
   )
 }

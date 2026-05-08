@@ -107,8 +107,7 @@ export default function CalendarClient({ initialTasks, initialColumns, initialEv
     <div className="w-full p-4 md:p-6">
       {/* 헤더 */}
       <div className="mb-4 h-9 flex items-center gap-3">
-        <h1 className="text-xl font-bold text-gray-800 flex-1 md:hidden">캘린더</h1>
-        <div className="flex-1 hidden md:block" />
+        <div className="flex-1" />
         <div className="relative">
           {searchOpen ? (
             <div className="relative w-44 md:w-56">

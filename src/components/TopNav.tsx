@@ -5,7 +5,9 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import LogoutButton from './LogoutButton'
-import { getTasks, getColumns } from '@/lib/taskStore'
+import Logo from './Logo'
+import TaskDetailModal from './TaskDetailModal'
+import { getTasks, getColumns, updateTask, deleteTask } from '@/lib/taskStore'
 import type { Task, Column } from '@/lib/types'
 import { X } from 'lucide-react'
 
@@ -15,6 +17,7 @@ export default function TopNav() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [columns, setColumns] = useState<Column[]>([])
   const [showPanel, setShowPanel] = useState(false)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
   const today = new Date().toISOString().slice(0, 10)
   const todayLabel = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })
 
@@ -44,11 +47,21 @@ export default function TopNav() {
 
   return (
     <>
+      {/* 모바일 상단 로고 바 */}
+      <header className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <Link href="/"><Logo size={24} /></Link>
+        {todayDueTasks.length > 0 && (
+          <button
+            onClick={() => setShowPanel(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500 text-white text-xs hover:bg-orange-600 transition-colors"
+          >
+            오늘 마감 <span className="font-bold">{todayDueTasks.length}</span>
+          </button>
+        )}
+      </header>
+
       <header className="hidden md:flex items-center gap-6 px-6 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <Link href="/" className="flex items-center gap-2">
-          <img src="/icon.svg" alt="" className="h-6 w-6" />
-          <span className="text-lg font-bold text-slate-700">CarryOn</span>
-        </Link>
+        <Link href="/"><Logo size={28} /></Link>
         <Link href="/" className="text-sm text-gray-600 hover:text-slate-700 transition-colors">업무</Link>
         <Link href="/calendar" className="text-sm text-gray-600 hover:text-slate-700 transition-colors">캘린더</Link>
         <div className="ml-auto flex items-center gap-4 text-xs text-gray-400">
@@ -87,13 +100,14 @@ export default function TopNav() {
                   <section key={col.id}>
                     <h3 className="text-xs font-semibold text-gray-400 uppercase mb-2">{col.name}</h3>
                     {colTasks.map((task) => (
-                      <div
+                      <button
                         key={task.id}
-                        className="w-full py-2.5 px-3 mb-1 bg-gray-50 rounded-lg border border-gray-100"
+                        onClick={() => { setEditingTask(task); setShowPanel(false) }}
+                        className="w-full text-left py-2.5 px-3 mb-1 bg-gray-50 rounded-lg border border-gray-100 hover:border-orange-200 hover:bg-orange-50 transition-colors"
                       >
                         <p className="text-sm text-gray-800 font-medium">{task.title}</p>
                         {task.memo && <p className="text-xs text-gray-400 mt-0.5 truncate">{task.memo}</p>}
-                      </div>
+                      </button>
                     ))}
                   </section>
                 )
@@ -102,6 +116,22 @@ export default function TopNav() {
           </div>
         </div>
       )}
+
+      <TaskDetailModal
+        task={editingTask}
+        columns={columns}
+        onClose={() => setEditingTask(null)}
+        onSave={async (id, data) => {
+          await updateTask(id, data)
+          const updated = await getTasks()
+          setTasks(updated)
+        }}
+        onDelete={async (id) => {
+          await deleteTask(id)
+          setTasks((prev) => prev.filter((t) => t.id !== id))
+          setEditingTask(null)
+        }}
+      />
     </>
   )
 }
