@@ -23,17 +23,17 @@ export default function BottomNav() {
             pathname === '/' ? 'text-slate-700' : 'text-gray-400'
           }`}
         >
-          <LayoutDashboard size={20} />
-          <span>업무</span>
-        </Link>
-        <Link
-          href="/calendar"
-          className={`flex-1 flex flex-col items-center py-3 text-xs gap-1 transition-colors ${
-            pathname === '/calendar' ? 'text-slate-700' : 'text-gray-400'
-          }`}
-        >
           <CalendarDays size={20} />
           <span>캘린더</span>
+        </Link>
+        <Link
+          href="/tasks"
+          className={`flex-1 flex flex-col items-center py-3 text-xs gap-1 transition-colors ${
+            pathname === '/tasks' ? 'text-slate-700' : 'text-gray-400'
+          }`}
+        >
+          <LayoutDashboard size={20} />
+          <span>업무</span>
         </Link>
         <button
           onClick={() => setShowSettings(true)}

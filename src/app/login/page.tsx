@@ -28,6 +28,8 @@ export default function LoginPage() {
 
   useEffect(() => { setRecentAccounts(loadAccounts()) }, [])
 
+  const [setupLoading, setSetupLoading] = useState(false)
+
   async function login(e: string, p: string) {
     setLoading(true)
     setError('')
@@ -39,12 +41,21 @@ export default function LoginPage() {
       return
     }
     saveAccount(e, p)
+    setLoading(false)
+    setSetupLoading(true)
+    await fetch('/api/setup', { method: 'POST' })
     router.push('/')
     router.refresh()
   }
 
   return (
     <div className="flex-1 flex flex-col bg-gray-50 overflow-hidden">
+      {setupLoading && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex flex-col items-center justify-center gap-3">
+          <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+          <p className="text-white text-sm font-medium">준비 중...</p>
+        </div>
+      )}
       <div className="flex-1 flex items-end justify-center pb-8">
         <img src="/icon.svg" alt="CarryOn" className="w-16 h-16" />
       </div>

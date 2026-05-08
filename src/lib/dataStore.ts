@@ -63,18 +63,7 @@ export async function readAllTasks(): Promise<Task[]> {
 export async function readColumns(): Promise<Column[]> {
   const supabase = await createSupabaseServerClient()
   const { data } = await supabase.from('columns').select('*').order('order')
-  if (!data || data.length === 0) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase.from('columns').insert(
-        DEFAULT_COLUMN_ROWS.map((c) => ({ ...c, id: crypto.randomUUID(), user_id: user.id }))
-      )
-      const { data: fresh } = await supabase.from('columns').select('*').order('order')
-      return (fresh ?? []).map(toColumn)
-    }
-    return []
-  }
-  return data.map(toColumn)
+  return (data ?? []).map(toColumn)
 }
 
 export async function readEvents(): Promise<CalendarEvent[]> {

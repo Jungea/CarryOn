@@ -22,6 +22,7 @@ export default function SettingsModal({ onClose }: Props) {
   }, [])
 
   async function handleLogout() {
+    onClose()
     const supabase = createSupabaseBrowserClient()
     await supabase.auth.signOut()
     router.push('/login')

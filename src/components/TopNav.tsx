@@ -69,8 +69,8 @@ export default function TopNav() {
 
       <header className="hidden md:flex items-center gap-6 px-6 py-3 bg-white border-b border-gray-200 shadow-sm">
         <Link href="/"><Logo size={28} /></Link>
-        <Link href="/" className={`text-sm transition-colors ${pathname === '/' ? 'text-slate-800 font-semibold' : 'text-gray-400 hover:text-slate-700'}`}>업무</Link>
-        <Link href="/calendar" className={`text-sm transition-colors ${pathname === '/calendar' ? 'text-slate-800 font-semibold' : 'text-gray-400 hover:text-slate-700'}`}>캘린더</Link>
+        <Link href="/" className={`text-sm transition-colors ${pathname === '/' ? 'text-slate-800 font-semibold' : 'text-gray-400 hover:text-slate-700'}`}>캘린더</Link>
+        <Link href="/tasks" className={`text-sm transition-colors ${pathname === '/tasks' ? 'text-slate-800 font-semibold' : 'text-gray-400 hover:text-slate-700'}`}>업무</Link>
         <div className="ml-auto flex items-center gap-4 text-xs text-gray-400">
           {todayDueTasks.length > 0 && (
             <button
