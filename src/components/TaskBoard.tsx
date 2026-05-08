@@ -52,7 +52,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
       columnId,
       order: colTasks.length,
     })
-    setTasks((prev) => [...prev, newTask])
+    setTasks((prev) => [newTask, ...prev])
   }
 
   // 업무 수정 (제목, 메모, 마감일 등 부분 업데이트)
