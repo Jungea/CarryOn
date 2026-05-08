@@ -7,7 +7,7 @@ import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 
 export const metadata: Metadata = {
   title: 'CarryOn',
-  description: '개인 업무 관리',
+  description: '할 일을 끝까지 가져가세요.',
   icons: {
     icon: '/icon.svg',
     apple: '/icon.png',
@@ -16,6 +16,20 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: 'default',
     title: 'CarryOn',
+  },
+  openGraph: {
+    title: 'CarryOn',
+    description: '할 일을 끝까지 가져가세요.',
+    url: 'https://carryon.kro.kr',
+    siteName: 'CarryOn',
+    images: [{ url: 'https://carryon.kro.kr/icon.png', width: 512, height: 512 }],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'CarryOn',
+    description: '할 일을 끝까지 가져가세요.',
+    images: ['https://carryon.kro.kr/icon.png'],
   },
 }
 
