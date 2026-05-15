@@ -127,29 +127,6 @@ DNS에서 CNAME을 `cname.vercel-dns.com`으로 설정
 
 ---
 
-## 계정 북마크릿 (빠른 로그인)
-
-여러 계정을 PC 북마크로 저장해두고 클릭 한 번에 로그인할 수 있습니다.
-
-### 만드는 방법
-
-1. 브라우저 북마크 추가 (Ctrl+D 또는 북마크바 우클릭 → 페이지 추가)
-2. 이름: `CarryOn - 계정1` 등 원하는 이름
-3. URL 칸에 아래 코드 붙여넣기 (이메일·비밀번호 부분만 수정):
-
-```
-javascript:(function(){var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;var e=document.querySelector('input[type="email"]');var p=document.querySelector('input[type="password"]');s.call(e,'계정@email.com');e.dispatchEvent(new Event('input',{bubbles:true}));s.call(p,'비밀번호');p.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('button[type="submit"]').click();})()
-```
-
-### 사용 방법
-
-1. 로그인 페이지 접속
-2. 원하는 계정 북마크 클릭 → 자동 입력 후 로그인
-
-> 비밀번호는 브라우저 북마크 매니저에만 저장되며 URL이나 서버 로그에 남지 않습니다.
-
----
-
 ## 체크리스트
 
 - [ ] Supabase 프로젝트 생성
