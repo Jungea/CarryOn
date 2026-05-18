@@ -13,81 +13,27 @@
 
 ---
 
-## 2. 테이블 생성
+## 2. 테이블 생성 및 RLS 설정
 
-Supabase 대시보드 → SQL Editor에서 실행:
-
-```sql
--- tasks
-create table tasks (
-  id uuid primary key,
-  user_id uuid references auth.users not null,
-  title text not null default '',
-  memo text not null default '',
-  column_id uuid not null,
-  "order" int not null default 0,
-  due_date date,
-  created_at timestamptz not null default now(),
-  completed_at timestamptz
-);
-
--- columns
-create table columns (
-  id uuid primary key,
-  user_id uuid references auth.users not null,
-  name text not null,
-  "order" int not null default 0,
-  is_completed_column boolean not null default false,
-  filter_type text,
-  filter_days int
-);
-
--- calendar_events
-create table calendar_events (
-  id uuid primary key,
-  user_id uuid references auth.users not null,
-  date date not null,
-  type text not null,
-  name text,
-  created_at timestamptz not null default now()
-);
-```
+Supabase 대시보드 → SQL Editor에서 [supabase/migrations/001_init.sql](./supabase/migrations/001_init.sql) 내용을 붙여넣고 실행합니다.
 
 ---
 
-## 3. RLS 설정
-
-이어서 SQL Editor에서 실행:
-
-```sql
-alter table tasks enable row level security;
-create policy "tasks: 본인 데이터만" on tasks for all
-  using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
-alter table columns enable row level security;
-create policy "columns: 본인 데이터만" on columns for all
-  using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
-alter table calendar_events enable row level security;
-create policy "calendar_events: 본인 데이터만" on calendar_events for all
-  using (auth.uid() = user_id) with check (auth.uid() = user_id);
-```
-
----
-
-## 4. 인증 설정
+## 3. 인증 설정
 
 Authentication → Providers → Email:
 - **Enable Email Provider**: ON
 - **Confirm email**: OFF 권장 (가입 즉시 로그인)
 
-Authentication → Users에서 유저 직접 추가/비밀번호 변경 가능.
-
 ---
 
-## 5. 환경변수 설정 (로컬)
+## 4. 환경변수 설정
 
-`.env.local` 파일 생성:
+`.env.local.example`을 복사해서 값 입력:
+
+```bash
+cp .env.local.example .env.local
+```
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
@@ -96,20 +42,20 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
 ---
 
-## 6. 로컬 실행 확인
+## 5. 로컬 실행 확인
 
 ```bash
 npm install
 npm run dev
 ```
 
-브라우저에서 `http://localhost:3000` → 회원가입 → 기본 컬럼 4개 자동 생성 확인.
+브라우저에서 `http://localhost:3000` → 로그인 페이지 하단 **회원가입** → 기본 컬럼 4개 자동 생성 확인.
 
-> WSL 환경(`/mnt/d/`)에서는 Windows CMD/PowerShell이 아닌 WSL 터미널에서 실행해야 합니다.
+> WSL 환경에서는 WSL 터미널에서 실행해야 합니다.
 
 ---
 
-## 7. Vercel 배포
+## 6. Vercel 배포
 
 1. [vercel.com](https://vercel.com) → New Project → GitHub 레포 연결
 2. Framework Preset: **Next.js** (자동 감지)
@@ -127,6 +73,17 @@ DNS에서 CNAME을 `cname.vercel-dns.com`으로 설정
 
 ---
 
+## 7. DB 정지 방지 (무료 플랜)
+
+Supabase 무료 플랜은 일정 기간 비활성 시 DB가 일시정지됩니다.  
+[cron-job.org](https://cron-job.org)에서 매일 1회 헬스체크 URL을 ping하여 방지합니다.
+
+1. [cron-job.org](https://cron-job.org) 가입
+2. CREATE CRONJOB → URL: `https://your-domain.com/api/health`
+3. Schedule: Every day → Save
+
+---
+
 ## 체크리스트
 
 - [ ] Supabase 프로젝트 생성
@@ -137,3 +94,4 @@ DNS에서 CNAME을 `cname.vercel-dns.com`으로 설정
 - [ ] 로컬 실행 확인 (기본 컬럼 4개)
 - [ ] Vercel 배포 (환경변수 포함)
 - [ ] 커스텀 도메인 설정 (선택)
+- [ ] cron-job.org 헬스체크 등록
