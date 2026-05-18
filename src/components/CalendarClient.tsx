@@ -116,7 +116,7 @@ export default function CalendarClient({ initialTasks, initialColumns, initialEv
                 autoFocus
                 onChange={handleSearchChange}
                 onKeyDown={(e) => { if (e.key === 'Escape') closeSearch() }}
-                placeholder="업무 검색..."
+                placeholder="태스크 검색..."
                 className="text-sm bg-gray-100 rounded-full pl-8 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white w-full transition-colors"
               />
               <button onClick={closeSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">

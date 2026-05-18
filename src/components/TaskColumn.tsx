@@ -61,7 +61,7 @@ export default function TaskColumn({
   }
 
   async function handleDelete() {
-    if (!confirm(`"${column.name}" 컬럼을 삭제할까요? 포함된 업무도 함께 삭제됩니다.`)) return
+    if (!confirm(`"${column.name}" 컬럼을 삭제할까요? 포함된 태스크도 함께 삭제됩니다.`)) return
     await onDeleteColumn(column.id)
   }
 
@@ -167,7 +167,7 @@ export default function TaskColumn({
               className="w-full border border-dashed border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 placeholder-gray-300 focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 bg-transparent focus:bg-white transition-all disabled:opacity-50"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              placeholder={adding ? '추가 중...' : '+ 업무 추가'}
+              placeholder={adding ? '추가 중...' : '+ 태스크 추가'}
               onKeyDown={(e) => { if (e.key === 'Escape') setNewTitle('') }}
               disabled={adding}
             />

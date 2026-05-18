@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'CarryOn',
     short_name: 'CarryOn',
-    description: '개인 업무 관리',
+    description: '개인 태스크 관리',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

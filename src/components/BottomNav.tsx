@@ -33,7 +33,7 @@ export default function BottomNav() {
           }`}
         >
           <LayoutDashboard size={20} />
-          <span>업무</span>
+          <span>태스크</span>
         </Link>
         <button
           onClick={() => setShowSettings(true)}

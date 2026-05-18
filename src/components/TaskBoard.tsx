@@ -256,7 +256,7 @@ export default function TaskBoard({ initialTasks, initialColumns }: TaskBoardPro
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery('') } }}
-              placeholder="업무 검색..."
+              placeholder="태스크 검색..."
               className="w-full text-sm bg-gray-100 rounded-full pl-8 pr-8 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white transition-colors"
             />
             <button

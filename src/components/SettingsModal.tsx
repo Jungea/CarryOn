@@ -42,7 +42,10 @@ export default function SettingsModal({ onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-xs mx-4 p-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-semibold text-gray-800">설정</h2>
+          <div>
+            <h2 className="text-base font-semibold text-gray-800">설정</h2>
+            {email && <p className="text-xs text-gray-400 mt-0.5">{email}</p>}
+          </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
         </div>
 
@@ -61,7 +64,7 @@ export default function SettingsModal({ onClose }: Props) {
             <p className="text-sm text-red-500 font-medium flex items-center gap-2">
               <RotateCcw size={14} /> 전체 초기화
             </p>
-            <p className="text-xs text-gray-400">모든 업무와 컬럼이 삭제됩니다. 확인을 위해 이메일을 입력하세요.</p>
+            <p className="text-xs text-gray-400">모든 태스크와 컬럼이 삭제됩니다. 확인을 위해 이메일을 입력하세요.</p>
             <input
               value={emailInput}
               onChange={(e) => setEmailInput(e.target.value)}

@@ -64,7 +64,7 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
   }
 
   async function handleDelete() {
-    if (!task || !confirm('업무를 삭제할까요?')) return
+    if (!task || !confirm('태스크를 삭제할까요?')) return
     setDeleting(true)
     await onDelete(task.id)
     setDeleting(false)
@@ -80,7 +80,7 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
         className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold text-gray-800">업무 편집</h2>
+        <h2 className="text-lg font-semibold text-gray-800">태스크 편집</h2>
 
         <div className="flex flex-col gap-1">
           <label className="text-xs text-gray-500 font-medium">제목</label>
@@ -88,7 +88,7 @@ export default function TaskDetailModal({ task, columns, onClose, onSave, onDele
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="업무 제목"
+            placeholder="태스크 제목"
             autoFocus
           />
         </div>

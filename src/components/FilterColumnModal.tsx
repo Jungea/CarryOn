@@ -93,7 +93,7 @@ export default function FilterColumnModal({ onClose, onCreate }: Props) {
           </div>
 
           <p className="text-xs text-gray-400">
-            {FILTER_TYPE_LABELS[filterType]}이 {filterDays === 1 ? '오늘' : `최근 ${filterDays}일`}인 업무를 표시합니다.
+            {FILTER_TYPE_LABELS[filterType]}이 {filterDays === 1 ? '오늘' : `최근 ${filterDays}일`}인 태스크를 표시합니다.
           </p>
 
           <button
