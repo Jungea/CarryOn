@@ -7,7 +7,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import TaskCard, { StaticTaskCard } from './TaskCard'
 import type { Column, Task } from '@/lib/types'
-import { Pencil, Trash2, Filter } from 'lucide-react'
+import { MoreVertical, Filter } from 'lucide-react'
 
 const FILTER_TYPE_LABELS = { dueDate: '마감일', createdAt: '생성일', completedAt: '완료일' }
 
@@ -42,6 +42,7 @@ export default function TaskColumn({
   const [nameInput, setNameInput] = useState(column.name)
   const [newTitle, setNewTitle] = useState('')
   const [adding, setAdding] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: column.id })
@@ -132,21 +133,32 @@ export default function TaskColumn({
           </span>
         )}
 
-        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <div className="relative" onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={() => { setEditing(true); setNameInput(column.name) }}
-            className="text-gray-400 hover:text-gray-600 text-xs px-1"
-            title="이름 변경"
+            onClick={() => setShowMenu((v) => !v)}
+            className="text-gray-400 hover:text-gray-600 px-1"
           >
-            <Pencil size={14} />
+            <MoreVertical size={16} />
           </button>
-          <button
-            onClick={handleDelete}
-            className="text-gray-400 hover:text-red-500 text-xs px-1"
-            title="컬럼 삭제"
-          >
-            <Trash2 size={14} />
-          </button>
+          {showMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+              <div className="absolute right-0 top-6 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[100px]">
+                <button
+                  onClick={() => { setEditing(true); setNameInput(column.name); setShowMenu(false) }}
+                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  이름 변경
+                </button>
+                <button
+                  onClick={() => { handleDelete(); setShowMenu(false) }}
+                  className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50"
+                >
+                  삭제
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
