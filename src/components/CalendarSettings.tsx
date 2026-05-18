@@ -5,7 +5,7 @@ import { useState } from 'react'
 import type { CalendarEvent, EventType } from '@/lib/types'
 import { X } from 'lucide-react'
 
-const LEAVE_TYPES: EventType[] = ['연차', '오전반차', '오후반차', '오전반반차', '오후반반차']
+const LEAVE_TYPES: EventType[] = ['휴가', '오전반휴', '오후반휴', '오전반반휴', '오후반반휴']
 
 interface CalendarSettingsProps {
   open: boolean
@@ -19,7 +19,7 @@ export default function CalendarSettings({ open, events, onClose, onAddEvent, on
   const [tab, setTab] = useState<'event' | 'holiday' | 'leave'>('event')
   const [date, setDate] = useState('')
   const [name, setName] = useState('')
-  const [leaveType, setLeaveType] = useState<EventType>('연차')
+  const [leaveType, setLeaveType] = useState<EventType>('휴가')
   const [saving, setSaving] = useState(false)
 
   if (!open) return null
@@ -69,7 +69,7 @@ export default function CalendarSettings({ open, events, onClose, onAddEvent, on
             onClick={() => setTab('leave')}
             className={`flex-1 py-2.5 text-sm font-medium transition-colors ${tab === 'leave' ? 'text-amber-500 border-b-2 border-amber-400' : 'text-gray-400 hover:text-gray-600'}`}
           >
-            연차
+            휴가
           </button>
         </div>
 

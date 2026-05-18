@@ -21,7 +21,7 @@ export interface Column {
   filterDays?: number | null
 }
 
-export type LeaveType = '연차' | '오전반차' | '오후반차' | '오전반반차' | '오후반반차'
+export type LeaveType = '휴가' | '오전반휴' | '오후반휴' | '오전반반휴' | '오후반반휴'
 export type EventType = 'holiday' | 'event' | LeaveType
 
 export interface CalendarEvent {

@@ -9,7 +9,7 @@ import type { Column, Task, CalendarEvent, EventType } from '@/lib/types'
 import { X } from 'lucide-react'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
-const LEAVE_TYPES: EventType[] = ['연차', '오전반차', '오후반차', '오전반반차', '오후반반차']
+const LEAVE_TYPES: EventType[] = ['휴가', '오전반휴', '오후반휴', '오전반반휴', '오후반반휴']
 
 interface DaySidePanelProps {
   dateStr: string | null
@@ -45,7 +45,7 @@ function QuickAddEvent({
 }) {
   const [mode, setMode] = useState<'holiday' | 'leave' | 'event' | null>(null)
   const [name, setName] = useState('')
-  const [leaveType, setLeaveType] = useState<EventType>('연차')
+  const [leaveType, setLeaveType] = useState<EventType>('휴가')
   const [saving, setSaving] = useState(false)
 
   async function handleAdd() {
@@ -71,7 +71,7 @@ function QuickAddEvent({
           + 공휴일
         </button>
         <button onClick={() => setMode('leave')} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600 transition-colors">
-          + 연차
+          + 휴가
         </button>
       </div>
     )
